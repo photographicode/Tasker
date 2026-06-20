@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title>Tasker - Command Node</title>
+    <title>Aether - Command Canvas</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,10 +18,11 @@
 
     <style>
         :root {
-            --glass-base: rgba(5, 5, 5, 0.55);
-            --glass-card: rgba(15, 15, 15, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-border-light: rgba(255, 255, 255, 0.15);
+            /* Exact Liquid Glass aesthetics from the reference image */
+            --glass-base: rgba(10, 10, 10, 0.35);
+            --glass-card: rgba(20, 20, 20, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-border-light: rgba(255, 255, 255, 0.12);
         }
 
         html, body {
@@ -29,7 +30,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: hidden; /* Prevents white space cutoff bug */
             background-color: #000;
         }
 
@@ -55,83 +56,94 @@
         /* Glass Components */
         .glass-panel {
             background: var(--glass-base);
-            backdrop-filter: blur(35px);
-            -webkit-backdrop-filter: blur(35px);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
         }
 
         .flat-card {
             background: var(--glass-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
             transition: all 0.2s ease;
         }
         .flat-card:hover { border-color: var(--glass-border-light); }
         
         .flat-input {
-            background: rgba(0,0,0,0.5);
+            background: rgba(255,255,255,0.03);
             border: 1px solid var(--glass-border);
             color: white;
             transition: all 0.2s ease;
         }
         .flat-input:focus { 
-            border-color: rgba(255,255,255,0.3); 
-            background: rgba(0,0,0,0.8);
+            border-color: rgba(255,255,255,0.2); 
+            background: rgba(255,255,255,0.08);
             outline: none; 
         }
 
         .task-checkbox {
             appearance: none; width: 1.25rem; height: 1.25rem;
-            border: 2px solid #444; border-radius: 4px;
+            border: 2px solid rgba(255,255,255,0.2); border-radius: 6px;
             cursor: pointer; position: relative; transition: all 0.2s ease;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
         }
-        .task-checkbox:hover { border-color: #666; }
+        .task-checkbox:hover { border-color: rgba(255,255,255,0.5); }
         .task-checkbox:checked { background-color: #fff; border-color: #fff; }
         .task-checkbox:checked::after {
             content: '✓'; position: absolute; color: #000;
-            font-size: 0.8rem; font-weight: bold; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            font-size: 0.8rem; font-weight: bold;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
 
-        .task-completed { opacity: 0.35; }
+        .task-completed { opacity: 0.4; }
         .task-text { transition: all 0.3s ease; }
         .task-text-completed { text-decoration: line-through; text-decoration-color: #64748b; color: #94a3b8; }
-
-        /* Universal Modals */
-        .custom-modal {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -45%) scale(0.95);
-            background: rgba(10, 10, 10, 0.85);
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            border: 1px solid var(--glass-border-light);
-            border-radius: 24px; z-index: 100; opacity: 0;
-            pointer-events: none; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            width: 90%; max-width: 440px; display: flex; flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 1), 0 0 0 1px rgba(255,255,255,0.05);
-        }
-        .custom-modal.open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
-
-        .modal-overlay {
-            position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-        }
-        .modal-overlay.open { opacity: 1; pointer-events: auto; }
 
         /* Animations */
         .view-enter { animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Nav Elements */
-        .nav-btn { color: #888; transition: all 0.2s; border: 1px solid transparent; }
+        .nav-btn { color: #888; transition: all 0.2s; border: 1px solid transparent; border-radius: 9999px; }
         .nav-btn:hover { color: #fff; background-color: rgba(255,255,255,0.05); }
-        .nav-btn.active { color: #fff; background-color: rgba(255,255,255,0.1); border-color: var(--glass-border-light); }
+        .nav-btn.active { color: #fff; background-color: rgba(255,255,255,0.08); border-color: var(--glass-border-light); }
         
         .nav-btn-mobile { color: #666; transition: all 0.2s; }
         .nav-btn-mobile.active { color: #fff; }
+
+        /* Universal Modals */
+        .custom-modal {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -45%) scale(0.95);
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid var(--glass-border-light);
+            border-radius: 24px;
+            z-index: 100; opacity: 0; pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 100%; max-width: 440px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 1), 0 0 0 1px rgba(255,255,255,0.05);
+        }
+        .custom-modal.open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
+
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 90; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .toast-enter { animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-leave { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideLeft { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideRight { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(50px); } }
 
         .pill-radio:checked + label { background-color: #fff; color: #000; border-color: #fff; }
         .switch-checkbox:checked + .switch-label { background-color: #ffffff; }
@@ -141,17 +153,17 @@
 <body class="flex flex-row w-full h-full overflow-hidden bg-black">
 
     <!-- LEFT COLUMN: Ambient Desktop Display -->
-    <aside class="relative hidden lg:flex flex-col w-[350px] xl:w-[400px] flex-shrink-0 border-r border-white/10 h-full overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-black/60 to-black z-0"></div>
+    <aside class="relative hidden lg:flex flex-col w-[350px] xl:w-[400px] flex-shrink-0 border-r border-white/5 h-full overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-[rgba(0,0,0,0.1)] via-[rgba(0,0,0,0.6)] to-[rgba(0,0,0,0.85)] z-0"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-0"></div>
 
         <div class="relative z-10 p-10 flex flex-col h-full justify-between">
             <div class="mt-8">
                 <h1 class="text-5xl font-semibold text-white tracking-tight">Hi Jo.</h1>
-                <p id="header-subtitle" class="text-sm text-neutral-400 mt-3 font-medium">Focus for today</p>
+                <p id="header-subtitle" class="text-sm text-neutral-400 mt-3 font-medium">Timeline & Agenda mapping.</p>
             </div>
             <div class="mb-8">
-                <div id="clock" class="text-5xl text-white font-bold mono tracking-tight">00:00:00</div>
+                <div id="clock" class="text-5xl text-white font-medium mono tracking-tight drop-shadow-lg">00:00:00</div>
                 <div class="text-[10px] uppercase tracking-widest text-neutral-500 mt-2 font-bold">Local System Time</div>
             </div>
         </div>
@@ -161,120 +173,108 @@
     <main class="flex-1 flex flex-col relative h-full glass-panel overflow-hidden">
         
         <!-- TOP NAVIGATION BAR (Tablet/Desktop) -->
-        <nav class="hidden md:flex h-20 shrink-0 border-b border-white/10 px-8 xl:px-12 items-center justify-between z-40 bg-black/40 backdrop-blur-xl">
+        <nav class="hidden md:flex h-20 shrink-0 border-b border-white/10 px-8 xl:px-12 items-center justify-between z-40 bg-black/40 backdrop-blur-2xl">
             <div class="flex items-center gap-2">
-                <button onclick="switchTab('today')" class="nav-today nav-btn active flex items-center gap-2 px-4 py-2.5 rounded-xl">
-                    <span class="text-xs font-semibold tracking-wide">Today</span>
+                <button onclick="switchTab('today')" id="nav-today" class="nav-btn flex items-center gap-2 px-5 py-2.5">
+                    <i data-lucide="sun" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Today</span>
                 </button>
-                <button onclick="switchTab('home')" class="nav-home nav-btn flex items-center gap-2 px-4 py-2.5 rounded-xl">
-                    <span class="text-xs font-semibold tracking-wide">Dashboard</span>
+                <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex items-center gap-2 px-5 py-2.5">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Dashboard</span>
                 </button>
-                <button onclick="switchTab('projects')" class="nav-projects nav-btn flex items-center gap-2 px-4 py-2.5 rounded-xl">
-                    <span class="text-xs font-semibold tracking-wide">Projects</span>
+                <button onclick="switchTab('projects')" id="nav-projects" class="nav-btn flex items-center gap-2 px-5 py-2.5">
+                    <i data-lucide="folder" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Projects</span>
                 </button>
-                <button onclick="switchTab('calendar')" class="nav-calendar nav-btn flex items-center gap-2 px-4 py-2.5 rounded-xl">
-                    <span class="text-xs font-semibold tracking-wide">Timeline</span>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn active flex items-center gap-2 px-5 py-2.5">
+                    <i data-lucide="calendar-days" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Timeline</span>
                 </button>
-                <button onclick="switchTab('sync')" class="nav-sync nav-btn flex items-center gap-2 px-4 py-2.5 rounded-xl">
-                    <span class="text-xs font-semibold tracking-wide">Sync</span>
+                <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex items-center gap-2 px-5 py-2.5">
+                    <i data-lucide="user" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Profile</span>
                 </button>
             </div>
-            <button onclick="switchTab('add')" class="px-6 py-2.5 bg-white text-black rounded-xl text-xs font-bold hover:bg-neutral-200 transition-transform flex items-center gap-2">
+            <button onclick="switchTab('add')" class="px-6 py-2.5 bg-white text-black rounded-full text-xs font-bold hover:bg-neutral-200 transition-transform flex items-center gap-2 shadow-[0_4px_15px_rgba(255,255,255,0.2)]">
                 <i data-lucide="plus" class="w-4 h-4"></i><span>New Task</span>
             </button>
         </nav>
 
         <section class="flex-1 overflow-y-auto p-6 md:p-8 xl:p-12 relative pb-28 md:pb-12">
-            <div class="max-w-5xl w-full mx-auto">
+            <div class="max-w-4xl w-full mx-auto">
                 
-                <!-- VIEW: TODAY (Default Home) -->
-                <div id="view-today" class="view-enter">
+                <!-- VIEW: DASHBOARD -->
+                <div id="view-home" class="view-enter hidden">
+                    <div class="flex gap-4 mb-10">
+                        <div class="flat-card flex-1 p-6 flex flex-col justify-center">
+                            <span class="text-4xl font-semibold text-white mono" id="stat-pending">0</span>
+                            <span class="text-xs uppercase tracking-widest text-neutral-400 font-semibold mt-2">Active Objectives</span>
+                        </div>
+                        <div class="flat-card flex-1 p-6 flex flex-col justify-center">
+                            <span class="text-4xl font-semibold text-white mono" id="stat-completed">0</span>
+                            <span class="text-xs uppercase tracking-widest text-neutral-400 font-semibold mt-2">Cleared History</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-12">
+                        <h2 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider flex items-center gap-2"><i data-lucide="list" class="w-4 h-4"></i> All Pending Tasks</h2>
+                        <div id="list-pending" class="flex flex-col gap-3"></div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-sm font-semibold text-neutral-500 mb-4 uppercase tracking-wider flex items-center gap-2"><i data-lucide="history" class="w-4 h-4"></i> Completed History</h2>
+                        <div id="list-completed" class="flex flex-col gap-3 opacity-70 hover:opacity-100 transition-opacity"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW: TODAY -->
+                <div id="view-today" class="view-enter hidden">
                     <div class="flex justify-between items-end mb-8 pt-2">
                         <div>
                             <h2 class="text-3xl font-bold text-white tracking-tight">Today's Focus</h2>
-                            <p class="text-sm text-neutral-400 mt-2 font-mono flex items-center gap-2">
-                                <i data-lucide="calendar" class="w-4 h-4"></i>
-                                <span id="today-date-subtitle">Date</span>
-                            </p>
+                            <p class="text-sm text-neutral-400 mt-2 font-medium" id="today-date-subtitle">Date</p>
                         </div>
                         <div class="text-right">
-                            <span id="today-progress" class="text-4xl font-bold text-white mono">0%</span>
-                            <div class="text-[9px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Daily Completion</div>
+                            <span id="today-progress" class="text-4xl font-bold text-white mono tracking-tighter">0%</span>
+                            <div class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Completion</div>
                         </div>
                     </div>
 
-                    <div class="w-full h-1.5 bg-black/50 rounded-full overflow-hidden mb-12 border border-white/5">
-                        <div id="today-progress-bar" class="h-full bg-white w-0 transition-all duration-700 ease-out"></div>
+                    <div class="w-full h-1.5 bg-black/50 rounded-full overflow-hidden mb-10 border border-white/5 shadow-inner">
+                        <div id="today-progress-bar" class="h-full bg-white w-0 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
                     </div>
 
                     <div class="mb-10">
-                        <h3 class="text-[10px] uppercase tracking-widest text-neutral-400 font-bold mb-4">Scheduled Tasks</h3>
+                        <h2 class="text-xs font-bold text-neutral-400 mb-4 uppercase tracking-widest flex items-center gap-2"><i data-lucide="target" class="w-4 h-4"></i> Scheduled Tasks</h2>
                         <div id="list-today-pending" class="flex flex-col gap-3"></div>
                     </div>
 
                     <div>
-                        <h3 class="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-4 hidden flex items-center gap-2" id="today-completed-header">
-                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Completed Today
-                        </h3>
-                        <div id="list-today-completed" class="flex flex-col gap-3"></div>
+                        <h2 class="text-xs font-bold text-neutral-500 mb-4 uppercase tracking-widest hidden flex items-center gap-2" id="today-completed-header"><i data-lucide="check-circle" class="w-4 h-4"></i> Completed Today</h2>
+                        <div id="list-today-completed" class="flex flex-col gap-3 opacity-60"></div>
                     </div>
                 </div>
 
-                <!-- VIEW: DASHBOARD -->
-                <div id="view-home" class="view-enter hidden">
-                    <h2 class="text-3xl font-bold text-white tracking-tight mb-8">Command Center</h2>
-                    <div class="flex flex-col md:flex-row gap-4 mb-10">
-                        <div class="flat-card flex-1 p-6 flex flex-col justify-center">
-                            <span class="text-4xl font-semibold text-white mono" id="stat-pending">0</span>
-                            <span class="text-xs uppercase tracking-widest text-neutral-500 font-semibold mt-2">Active Objectives</span>
-                        </div>
-                        <div class="flat-card flex-1 p-6 flex flex-col justify-center">
-                            <span class="text-4xl font-semibold text-white mono" id="stat-completed">0</span>
-                            <span class="text-xs uppercase tracking-widest text-neutral-500 font-semibold mt-2">Cleared History</span>
-                        </div>
-                    </div>
-                    <div class="mb-12">
-                        <h3 class="text-[10px] uppercase tracking-widest text-neutral-400 font-bold mb-4">All Pending Tasks</h3>
-                        <div id="list-pending" class="flex flex-col gap-3"></div>
-                    </div>
-                    <div>
-                        <h3 class="text-[10px] uppercase tracking-widest text-neutral-400 font-bold mb-4">Completed History</h3>
-                        <div id="list-completed" class="flex flex-col gap-3"></div>
-                    </div>
-                </div>
-
-                <!-- VIEW: PROJECTS (Notion Style) -->
+                <!-- VIEW: PROJECTS -->
                 <div id="view-projects" class="view-enter hidden">
-                    <div class="flex justify-between items-end mb-8 pt-2">
+                    <div class="flex justify-between items-center mb-10 pt-2">
                         <h2 class="text-3xl font-bold text-white tracking-tight">Workspaces</h2>
-                        <button onclick="openNewProjectModal()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-lg text-xs font-bold transition flex items-center gap-2">
+                        <button class="px-5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-bold transition flex items-center gap-2 border border-white/10">
                             <i data-lucide="folder-plus" class="w-4 h-4"></i> New Project
                         </button>
                     </div>
-
-                    <div class="flex flex-col lg:flex-row gap-6 h-[600px]">
-                        <!-- Projects List -->
-                        <div class="w-full lg:w-1/3 flex flex-col gap-3 overflow-y-auto pr-2" id="projects-list">
-                            <!-- Populated via JS -->
-                        </div>
-                        <!-- Project Details Pane -->
-                        <div class="w-full lg:w-2/3 flat-card p-8 flex flex-col overflow-y-auto" id="project-detail-pane">
-                            <div class="flex flex-col items-center justify-center h-full text-neutral-500 opacity-50">
-                                <i data-lucide="folder" class="w-16 h-16 mb-4"></i>
-                                <p class="text-sm">Select a workspace to view details</p>
-                            </div>
-                        </div>
+                    
+                    <div class="flex flex-col items-center justify-center p-16 border border-dashed border-white/10 rounded-3xl bg-black/20">
+                        <i data-lucide="box" class="w-12 h-12 text-neutral-600 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-white">No active projects</h3>
+                        <p class="text-sm text-neutral-400 text-center max-w-sm mt-2">Create a workspace to group related tasks, notes, and milestones.</p>
                     </div>
                 </div>
 
                 <!-- VIEW: TIMELINE -->
-                <div id="view-calendar" class="view-enter hidden">
-                    <div class="flex justify-between items-center mb-8 pt-2">
+                <div id="view-calendar" class="view-enter">
+                    <div class="relative flex justify-center items-center mb-10 pt-4">
                         <h2 class="text-3xl font-bold text-white tracking-tight">Timeline</h2>
-                        <div class="flex items-center gap-4 bg-black/50 p-1.5 rounded-xl border border-white/10">
-                            <button onclick="changeMonth(-1)" class="text-neutral-400 hover:text-white p-1 hover:bg-white/10 rounded-lg transition"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                            <span id="calendar-month-year" class="text-sm font-semibold uppercase tracking-widest text-white mono w-24 text-center">JUN 2026</span>
-                            <button onclick="changeMonth(1)" class="text-neutral-400 hover:text-white p-1 hover:bg-white/10 rounded-lg transition"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                        <div class="absolute right-0 flex items-center gap-3 bg-[#111] p-1.5 rounded-full border border-white/10 shadow-lg">
+                            <button onclick="changeMonth(-1)" class="text-neutral-400 hover:text-white p-1 hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            <span id="calendar-month-year" class="text-xs font-bold uppercase tracking-widest text-white mono w-24 text-center">JUN 2026</span>
+                            <button onclick="changeMonth(1)" class="text-neutral-400 hover:text-white p-1 hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
                         </div>
                     </div>
 
@@ -287,437 +287,406 @@
                         <div class="text-[10px] uppercase text-neutral-500 font-bold tracking-widest">Fri</div>
                         <div class="text-[10px] uppercase text-neutral-500 font-bold tracking-widest">Sat</div>
                     </div>
+
                     <div id="calendar-days-grid" class="grid grid-cols-7 gap-2 mb-10"></div>
 
-                    <div id="calendar-agenda-panel" class="hidden pb-4 bg-black/40 border border-white/10 rounded-2xl p-6">
+                    <div id="calendar-agenda-panel" class="hidden pb-4 bg-[var(--glass-card)] border border-[var(--glass-border)] rounded-3xl p-6 shadow-2xl mt-8">
                         <div class="flex justify-between items-end mb-6 border-b border-white/10 pb-4">
-                            <h3 id="agenda-date-title" class="text-lg font-bold text-white">Date</h3>
-                            <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold bg-white/5 px-3 py-1 rounded-lg" id="agenda-count">0 Scheduled</span>
+                            <h3 id="agenda-date-title" class="text-lg font-bold text-white uppercase tracking-wider">Date</h3>
+                            <span class="text-[10px] text-white uppercase tracking-widest font-bold bg-white/10 border border-white/10 px-3 py-1.5 rounded-full" id="agenda-count">0 Scheduled</span>
                         </div>
+                        
                         <div id="agenda-list" class="flex flex-col gap-3 mb-6"></div>
-                        <button onclick="triggerAddTaskFromTimeline()" class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition">
-                            <i data-lucide="calendar-plus" class="w-4 h-4"></i> Add Task for this Day
+
+                        <button onclick="triggerAddTaskFromTimeline()" class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition duration-200">
+                            <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                            <span>Add Task for this Day</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- VIEW: NEW TASK -->
                 <div id="view-add" class="view-enter hidden max-w-2xl mx-auto">
-                    <h2 class="text-3xl font-bold text-white mb-8 pt-2">Create Entry</h2>
-                    <form id="add-task-form" onsubmit="handleAddTask(event)" class="flex flex-col gap-8 bg-black/40 p-6 md:p-8 border border-white/10 rounded-3xl backdrop-blur-md">
+                    <h2 class="text-3xl font-bold text-white mb-8 pt-2 tracking-tight">Create Entry</h2>
+
+                    <form id="add-task-form" onsubmit="handleAddTask(event)" class="flex flex-col gap-8 flat-card p-8 rounded-3xl">
+                        <!-- Title -->
                         <div>
                             <input required type="text" id="task-title" placeholder="What needs to be done?" 
-                                   class="w-full bg-transparent border-b border-[#444] text-2xl text-white placeholder-neutral-600 outline-none focus:border-white transition pb-3 font-medium">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest text-neutral-500 mb-3 font-bold">Notes / Description</label>
-                            <textarea id="task-desc" rows="2" placeholder="Add specific context..."
-                                      class="w-full flat-input rounded-xl px-4 py-3 text-sm resize-none"></textarea>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-[10px] uppercase tracking-widest text-neutral-500 mb-3 font-bold">Workspace Project</label>
-                                <select id="task-project" class="w-full flat-input rounded-xl px-4 py-3 text-sm appearance-none cursor-pointer">
-                                    <option value="none">-- No Project --</option>
-                                    <!-- Populated via JS -->
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] uppercase tracking-widest text-neutral-500 mb-3 font-bold">Date</label>
-                                <button type="button" onclick="openDatePicker('task')" id="task-date-btn" 
-                                        class="w-full flat-input rounded-xl px-4 py-3 text-sm flex items-center justify-between">
-                                    <span id="task-date-display">Select Date</span>
-                                    <i data-lucide="calendar" class="w-4 h-4 text-neutral-500"></i>
-                                </button>
-                            </div>
+                                   class="w-full bg-transparent border-b border-white/20 text-2xl text-white placeholder-neutral-500 outline-none focus:border-white transition pb-3 font-medium">
                         </div>
 
+                        <!-- Description -->
                         <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <label class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold">Specific Time</label>
-                                <div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
-                                    <input type="checkbox" name="toggle-time" id="toggle-time" class="switch-checkbox hidden" checked onchange="toggleTimeVisibility()">
-                                    <label for="toggle-time" class="switch-label block overflow-hidden h-6 rounded-full bg-black/50 border border-white/20 cursor-pointer">
-                                        <span class="switch-dot block h-4 w-4 rounded-full bg-white absolute top-1 left-1 transition-transform duration-200"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="time-input-container" class="transition-all duration-300">
-                                <button type="button" onclick="openTimePicker()" id="task-time-btn" 
-                                        class="w-full flat-input rounded-xl px-4 py-3 text-sm flex items-center justify-between">
-                                    <span id="task-time-display">09:00 AM</span>
-                                    <i data-lucide="clock" class="w-4 h-4 text-neutral-500"></i>
+                            <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-3 font-bold">Notes & Context</label>
+                            <textarea id="task-desc" rows="3" placeholder="Add specific details..."
+                                      class="w-full flat-input rounded-xl px-4 py-3 text-sm resize-none focus:border-white/40 outline-none placeholder-neutral-600 leading-relaxed"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Date -->
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-3 font-bold">Date</label>
+                                <button type="button" onclick="openDatePicker('task')" id="task-date-btn" 
+                                        class="w-full flat-input rounded-xl px-4 py-3.5 text-sm flex items-center justify-between hover:border-white/30 text-white text-left transition font-medium">
+                                    <span id="task-date-display">Select Date</span>
+                                    <i data-lucide="calendar" class="w-4 h-4 text-neutral-400"></i>
                                 </button>
+                            </div>
+                            
+                            <!-- Time -->
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Specific Time</label>
+                                    <div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" name="toggle-time" id="toggle-time" class="switch-checkbox hidden" checked onchange="toggleTimeVisibility()">
+                                        <label for="toggle-time" class="switch-label block overflow-hidden h-5 rounded-full bg-black/40 cursor-pointer border border-white/20">
+                                            <span class="switch-dot block h-3 w-3 rounded-full bg-neutral-400 absolute top-1 left-1 transition-transform duration-200"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div id="time-input-container" class="transition-all duration-300">
+                                    <button type="button" onclick="openTimePicker()" id="task-time-btn" 
+                                            class="w-full flat-input rounded-xl px-4 py-3.5 text-sm flex items-center justify-between hover:border-white/30 text-white text-left transition font-medium">
+                                        <span id="task-time-display">09:00 AM</span>
+                                        <i data-lucide="clock" class="w-4 h-4 text-neutral-400"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <div class="mt-4 border-t border-white/10 pt-6">
-                            <button type="submit" class="w-full py-4 bg-white text-black rounded-xl font-bold text-sm hover:bg-neutral-200 transition shadow-[0_4px_20px_rgba(255,255,255,0.15)] flex justify-center items-center gap-2">
-                                <i data-lucide="check" class="w-5 h-5"></i> Commit to Database
+                            <button type="submit" class="w-full py-4 bg-white text-black rounded-xl font-bold text-sm hover:bg-neutral-200 transition shadow-[0_4px_20px_rgba(255,255,255,0.2)] flex justify-center items-center gap-2">
+                                <i data-lucide="check" class="w-5 h-5"></i> Create Task
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- VIEW: SYNC (Google Workspace) -->
-                <div id="view-sync" class="view-enter hidden max-w-xl mx-auto">
-                    <div class="flex flex-col items-center justify-center pt-10 pb-12 border-b border-white/10 bg-black/40 rounded-3xl backdrop-blur-md">
-                        <div class="w-20 h-20 rounded-full border border-white/20 bg-white/5 flex items-center justify-center mb-6">
-                            <i data-lucide="cloud-cog" class="w-8 h-8 text-white"></i>
+                <!-- VIEW: PROFILE -->
+                <div id="view-profile" class="view-enter hidden">
+                    <div class="flex flex-col items-center justify-center pt-10 pb-12 border-b border-white/10 flat-card rounded-3xl mb-8">
+                        <div class="w-24 h-24 rounded-full border-2 border-white/20 bg-black/40 flex items-center justify-center mb-6 shadow-xl">
+                            <i data-lucide="user" class="w-10 h-10 text-neutral-400"></i>
                         </div>
-                        <h2 class="text-3xl font-bold text-white mb-2">Workspace Sync</h2>
-                        <p class="text-xs text-neutral-400 text-center px-8 mb-8">Connect your Google Account to synchronize Calendar events and Tasks directly into Aether.</p>
+                        <h2 class="serif-name text-5xl text-white mb-4">Jo</h2>
+                        <div class="flex items-center gap-2 bg-black/50 px-4 py-1.5 rounded-full border border-white/10">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="text-[10px] uppercase tracking-widest text-neutral-300 font-bold mono">System Online</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="flat-card p-8 rounded-3xl flex flex-col justify-center">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="bg-black/40 p-3 rounded-xl border border-white/10"><i data-lucide="layers" class="w-5 h-5 text-neutral-300"></i></div>
+                                <div class="text-xs uppercase tracking-widest text-neutral-400 font-bold">Total Created</div>
+                            </div>
+                            <div id="profile-total-tasks" class="text-4xl font-bold text-white mono">0</div>
+                        </div>
+                        <div class="flat-card p-8 rounded-3xl flex flex-col justify-center">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="bg-black/40 p-3 rounded-xl border border-white/10"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i></div>
+                                <div class="text-xs uppercase tracking-widest text-neutral-400 font-bold">Tasks Completed</div>
+                            </div>
+                            <div id="profile-total-completed" class="text-4xl font-bold text-white mono">0</div>
+                        </div>
+                    </div>
+
+                    <!-- GOOGLE SYNC DASHBOARD -->
+                    <div class="flat-card p-8 rounded-3xl flex flex-col items-center text-center">
+                        <div class="bg-black/40 p-4 rounded-full border border-white/10 mb-4 shadow-lg"><i data-lucide="cloud-sync" class="w-6 h-6 text-white"></i></div>
+                        <h3 class="text-xl font-bold text-white mb-2">Workspace Sync</h3>
+                        <p class="text-xs text-neutral-400 max-w-md leading-relaxed mb-6">Connect your Google Account to automatically push tasks and pull calendar events securely via OAuth 2.0.</p>
                         
-                        <button onclick="performQuickSync()" id="btn-google-sync" class="px-8 py-3 bg-white text-black rounded-xl font-bold text-sm hover:scale-105 transition flex items-center gap-3 shadow-lg">
-                            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                            Sync Google Workspace
+                        <button id="google-auth-btn" onclick="handleGoogleAuthClick()" class="px-6 py-3 bg-white text-black rounded-full text-sm font-bold shadow-lg hover:bg-neutral-200 transition flex items-center gap-2">
+                            <i data-lucide="log-in" class="w-4 h-4"></i> Authenticate with Google
                         </button>
-                        <p id="sync-status" class="text-xs text-emerald-400 mt-4 font-mono hidden">Sync Successful</p>
+                        <div id="google-auth-status" class="mt-4 text-xs font-bold text-emerald-400 tracking-wider uppercase hidden flex items-center gap-2">
+                            <i data-lucide="check" class="w-3 h-3"></i> Authenticated & Synced
+                        </div>
                     </div>
                 </div>
 
             </div>
         </section>
 
-        <!-- BOTTOM NAVIGATION BAR (Mobile Only) -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-2xl border-t border-white/10 flex justify-around items-center px-2 pb-2 z-40">
-            <button onclick="switchTab('today')" class="nav-today nav-btn-mobile active flex flex-col items-center gap-1 p-2 w-16">
-                <i data-lucide="sun" class="w-5 h-5"></i><span class="text-[9px] font-bold">Today</span>
+        <!-- BOTTOM NAVIGATION BAR (Visible only on Mobile) -->
+        <nav class="md:hidden absolute bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-3xl border-t border-white/10 flex justify-between items-center px-4 pb-2 z-40">
+            <button onclick="switchTab('today')" class="nav-today nav-btn-mobile active flex flex-col items-center gap-1 p-2">
+                <i data-lucide="sun" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wide">Today</span>
             </button>
-            <button onclick="switchTab('projects')" class="nav-projects nav-btn-mobile flex flex-col items-center gap-1 p-2 w-16">
-                <i data-lucide="folder" class="w-5 h-5"></i><span class="text-[9px] font-bold">Projects</span>
+            <button onclick="switchTab('home')" class="nav-home nav-btn-mobile flex flex-col items-center gap-1 p-2">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wide">Home</span>
             </button>
             
             <div class="relative -top-5 px-2">
-                <button onclick="switchTab('add')" class="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(255,255,255,0.2)]">
+                <button onclick="switchTab('add')" class="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(255,255,255,0.25)] hover:scale-105 transition-transform">
                     <i data-lucide="plus" class="w-6 h-6 stroke-[2.5]"></i>
                 </button>
             </div>
 
-            <button onclick="switchTab('calendar')" class="nav-calendar nav-btn-mobile flex flex-col items-center gap-1 p-2 w-16">
-                <i data-lucide="calendar-days" class="w-5 h-5"></i><span class="text-[9px] font-bold">Timeline</span>
+            <button onclick="switchTab('calendar')" class="nav-calendar nav-btn-mobile flex flex-col items-center gap-1 p-2">
+                <i data-lucide="calendar-days" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wide">Timeline</span>
             </button>
-            <button onclick="switchTab('sync')" class="nav-sync nav-btn-mobile flex flex-col items-center gap-1 p-2 w-16">
-                <i data-lucide="cloud-cog" class="w-5 h-5"></i><span class="text-[9px] font-bold">Sync</span>
+            <button onclick="switchTab('profile')" class="nav-profile nav-btn-mobile flex flex-col items-center gap-1 p-2">
+                <i data-lucide="user" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wide">Profile</span>
             </button>
         </nav>
 
-        <div id="toast-container" class="fixed top-10 right-4 md:right-10 z-50 flex flex-col gap-3 pointer-events-none w-[90%] md:w-80"></div>
+        <!-- Toast Notifications Layer -->
+        <div id="desktop-toast-container" class="absolute top-24 right-4 md:right-8 z-50 flex flex-col gap-3 pointer-events-none w-72 md:w-80"></div>
+
     </main>
 
-    <!-- MODALS & OVERLAYS -->
+    <!-- DESKTOP MODALS & OVERLAYS -->
     <div id="custom-picker-overlay" class="modal-overlay" onclick="closeCustomDrawers()"></div>
     
+    <!-- Modal: Date Picker -->
     <div id="custom-date-picker" class="custom-modal">
-        <div class="p-5 border-b border-white/10 flex items-center justify-between bg-black/60 rounded-t-[24px]">
-            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Select Date</h3>
-            <div class="flex items-center gap-2 bg-white/5 p-1 rounded-lg">
-                <button type="button" onclick="navigatePickerMonth(-1)" class="text-neutral-400 p-1 hover:text-white rounded"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                <span id="picker-month-display" class="text-xs font-bold text-white mono w-20 text-center">JUN 2026</span>
-                <button type="button" onclick="navigatePickerMonth(1)" class="text-neutral-400 p-1 hover:text-white rounded"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+        <div class="p-5 border-b border-white/10 flex items-center justify-between bg-black/40 rounded-t-[24px]">
+            <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-neutral-400"></i> Select Date</h3>
+            <div class="flex items-center gap-2 bg-black/50 p-1 rounded-full border border-white/10">
+                <button type="button" onclick="navigatePickerMonth(-1)" class="text-neutral-400 p-1.5 hover:text-white hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-left" class="w-3 h-3"></i></button>
+                <span id="picker-month-display" class="text-[10px] font-bold uppercase tracking-widest text-white mono w-20 text-center">JUN 2026</span>
+                <button type="button" onclick="navigatePickerMonth(1)" class="text-neutral-400 p-1.5 hover:text-white hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
             </div>
         </div>
-        <div class="p-6 flex-1 bg-black/80">
-            <div class="grid grid-cols-7 gap-1 text-center mb-3 text-[10px] text-neutral-500 font-bold uppercase">
-                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        <div class="p-6 flex-1">
+            <div class="grid grid-cols-7 gap-1 text-center mb-3">
+                <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Su</span>
+                <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Mo</span>
+                <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Tu</span>
+                <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">We</span>
+                <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Th</span>
+                <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Fr</span>
+                <span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Sa</span>
             </div>
-            <div id="picker-calendar-grid" class="grid grid-cols-7 gap-2"></div>
+            <div id="picker-calendar-grid" class="grid grid-cols-7 gap-1.5"></div>
         </div>
-        <div class="p-4 border-t border-white/10 bg-black/60 rounded-b-[24px] flex justify-end gap-3">
-            <button type="button" onclick="closeCustomDrawers()" class="px-5 py-2 text-neutral-400 text-xs font-bold">Cancel</button>
+        <div class="p-4 border-t border-white/10 bg-black/40 rounded-b-[24px] flex justify-end gap-3">
+            <button type="button" onclick="closeCustomDrawers()" class="px-5 py-2.5 text-neutral-400 hover:text-white rounded-full font-bold text-xs transition">Cancel</button>
+            <button type="button" onclick="closeCustomDrawers()" class="px-6 py-2.5 bg-white text-black rounded-full font-bold text-xs hover:bg-neutral-200 transition shadow-lg">Confirm</button>
         </div>
     </div>
 
+    <!-- Modal: Time Picker -->
     <div id="custom-time-picker" class="custom-modal">
-        <div class="p-5 border-b border-white/10 bg-black/60 rounded-t-[24px]">
-            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Set Specific Time</h3>
+        <div class="p-5 border-b border-white/10 flex items-center justify-between bg-black/40 rounded-t-[24px]">
+            <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-neutral-400"></i> Set Time</h3>
         </div>
-        <div class="p-6 flex flex-col gap-6 bg-black/80">
+        <div class="p-6 flex flex-col gap-6">
             <div>
-                <label class="block text-[10px] uppercase text-neutral-500 mb-3 font-bold">Hour</label>
+                <label class="block text-[9px] uppercase tracking-widest text-neutral-500 mb-3 font-bold">Hour</label>
                 <div id="picker-hours-grid" class="grid grid-cols-6 gap-2"></div>
             </div>
             <div>
-                <label class="block text-[10px] uppercase text-neutral-500 mb-3 font-bold">Minute</label>
+                <label class="block text-[9px] uppercase tracking-widest text-neutral-500 mb-3 font-bold">Minute</label>
                 <div id="picker-minutes-grid" class="grid grid-cols-4 gap-2"></div>
             </div>
-            <div class="flex gap-3 pt-2">
-                <button type="button" onclick="setPickerPeriod('AM')" id="period-am" class="flex-1 py-3 rounded-xl border border-[#333] text-sm font-bold">AM</button>
-                <button type="button" onclick="setPickerPeriod('PM')" id="period-pm" class="flex-1 py-3 rounded-xl border border-[#333] text-sm font-bold">PM</button>
+            <div class="border-t border-white/10 pt-5">
+                <div class="flex gap-3">
+                    <button type="button" onclick="setPickerPeriod('AM')" id="period-am" class="flex-1 py-3 rounded-xl border border-white/20 text-sm font-bold transition text-center hover:bg-white/5">AM</button>
+                    <button type="button" onclick="setPickerPeriod('PM')" id="period-pm" class="flex-1 py-3 rounded-xl border border-white/20 text-sm font-bold transition text-center hover:bg-white/5">PM</button>
+                </div>
             </div>
         </div>
-        <div class="p-4 border-t border-white/10 bg-black/60 rounded-b-[24px] flex justify-end gap-3">
-            <button type="button" onclick="closeCustomDrawers()" class="px-5 py-2 text-neutral-400 text-xs font-bold">Confirm</button>
-        </div>
-    </div>
-
-    <div id="custom-reschedule-drawer" class="custom-modal">
-        <div class="p-6 border-b border-white/10 bg-black/60 rounded-t-[24px]">
-            <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2 mb-2"><i data-lucide="moon" class="w-4 h-4 text-neutral-400"></i> Evening Cleanup</h3>
-            <p class="text-xs text-neutral-400 leading-relaxed">It is past 8:00 PM. Move unfinished tasks to tomorrow?</p>
-        </div>
-        <div class="p-5 bg-black/80">
-            <div id="reschedule-tasks-preview" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2"></div>
-        </div>
-        <div class="p-5 border-t border-white/10 bg-black/60 rounded-b-[24px] flex gap-3">
-            <button type="button" onclick="dismissReschedulePrompt()" class="flex-1 py-3 bg-white/5 text-neutral-300 rounded-xl font-bold text-xs">Keep Today</button>
-            <button type="button" onclick="executeReschedule()" class="flex-1 py-3 bg-white text-black rounded-xl font-bold text-xs">Move to Tomorrow</button>
-        </div>
-    </div>
-
-    <!-- Project Creation Modal -->
-    <div id="custom-project-modal" class="custom-modal">
-        <div class="p-5 border-b border-white/10 bg-black/60 rounded-t-[24px]">
-            <h3 class="text-xs font-bold text-white uppercase tracking-wider">New Workspace</h3>
-        </div>
-        <div class="p-6 bg-black/80">
-            <input type="text" id="new-project-name" placeholder="Project Name" class="w-full bg-transparent border-b border-[#444] text-lg text-white outline-none pb-2 mb-4 font-bold">
-            <textarea id="new-project-desc" rows="2" placeholder="Brief description..." class="w-full flat-input rounded-xl px-4 py-3 text-sm resize-none"></textarea>
-        </div>
-        <div class="p-4 border-t border-white/10 bg-black/60 rounded-b-[24px] flex justify-end gap-3">
-            <button type="button" onclick="closeCustomDrawers()" class="px-4 py-2 text-neutral-400 text-xs font-bold">Cancel</button>
-            <button type="button" onclick="saveNewProject()" class="px-5 py-2 bg-white text-black rounded-xl text-xs font-bold">Create Project</button>
+        <div class="p-4 border-t border-white/10 bg-black/40 rounded-b-[24px] flex justify-end gap-3">
+            <button type="button" onclick="closeCustomDrawers()" class="px-5 py-2.5 text-neutral-400 hover:text-white rounded-full font-bold text-xs transition">Cancel</button>
+            <button type="button" onclick="closeCustomDrawers()" class="px-6 py-2.5 bg-white text-black rounded-full font-bold text-xs hover:bg-neutral-200 transition shadow-lg">Confirm</button>
         </div>
     </div>
 
 
     <script>
-        // Data Structures
-        let tasks = [];
-        let projects = [];
-        let activeTab = 'today';
-        let selectedProjectId = null; // For Notion view
-        
-        // Calendar State
-        let currentYear, currentMonth, selectedCalendarDate;
-        const MONTH_NAMES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-
-        // Picker States
-        let pickerTarget = 'task';
-        let pickerYear, pickerMonth, selectedTaskDate, selectedRepeatEndDate = ""; 
-        let selectedTimeHour = 9, selectedTimeMin = "00", selectedTimePeriod = "AM", hasCustomTime = true; 
-        let expandedCards = new Set();
-
-        // ----------------------------------------------------
-        // GOOGLE WORKSPACE API CONFIGURATION
-        // ----------------------------------------------------
+        // ==========================================
+        // GOOGLE WORKSPACE SYNC ENGINE
+        // ==========================================
         const GOOGLE_CLIENT_ID = "1000884953487-oq2m1a709vc35ejcfrj005kmip0s337u.apps.googleusercontent.com";
         const GOOGLE_API_KEY = "AIzaSyB6BcQqAFZ3DEF6gjT2i_MlxGH-f5-8NnU";
-        const DISCOVERY_DOCS = [
-            'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
-            'https://tasks.googleapis.com/$discovery/rest?version=v1'
-        ];
-        const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks.readonly';
-        
+        const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest", "https://tasks.googleapis.com/$discovery/rest?version=v1"];
+        const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks";
+
         let tokenClient;
-        let accessToken = null;
+        let gapiInited = false;
+        let gisInited = false;
+        let isAuthenticated = false;
 
-        function getSystemDate() { return new Date(); }
-
-        function closeCustomDrawers() {
-            const drawerIds = [
-                'custom-picker-overlay', 
-                'custom-date-picker', 
-                'custom-time-picker', 
-                'custom-reschedule-drawer',
-                'custom-project-modal'
-            ];
-            
-            drawerIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.classList.remove('open');
-                }
-            });
-        }
-
-        // Initialize Google API Engine securely
         function initGoogleSync() {
             try {
-                if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-                    tokenClient = window.google.accounts.oauth2.initTokenClient({
-                        client_id: GOOGLE_CLIENT_ID,
-                        scope: SCOPES,
-                        callback: (tokenResponse) => {
-                            if (tokenResponse && tokenResponse.access_token) {
-                                accessToken = tokenResponse.access_token;
-                                performQuickSync();
-                            }
-                        },
-                        error_callback: (err) => {
-                            console.warn("Google OAuth Error:", err);
+                gapi.load('client', intializeGapiClient);
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: GOOGLE_CLIENT_ID,
+                    scope: SCOPES,
+                    callback: (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            isAuthenticated = true;
+                            document.getElementById('google-auth-btn').classList.add('hidden');
+                            document.getElementById('google-auth-status').classList.remove('hidden');
+                            showMobileToast('Google Workspace Connected');
+                            fetchGoogleData();
                         }
-                    });
-                } else {
-                    console.warn("Google Identity Services object not found.");
-                }
-            } catch (e) {
-                console.error("Failed to initialize Google Sync. This will not break the app.", e);
+                    },
+                });
+                gisInited = true;
+            } catch(e) {
+                console.warn("Google Sync Initialization Bypassed (Likely running offline or blocked): ", e);
             }
         }
 
-        // Fast Sync Engine
-        async function performQuickSync() {
-            const btn = document.getElementById('btn-google-sync');
-            const statusText = document.getElementById('sync-status');
-            
-            if(!tokenClient) {
-                showMobileToast("Google Identity not loaded. Check connection.");
-                return;
-            }
-
-            if(!accessToken) {
-                // Request auth
-                tokenClient.requestAccessToken({prompt: ''});
-                return;
-            }
-
-            if(btn) btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Syncing...`;
-            try { if(window.lucide) lucide.createIcons(); } catch(e){}
-
+        async function intializeGapiClient() {
             try {
-                // Initialize gapi client if not done
-                if(!gapi.client.calendar) {
-                    await new Promise((resolve, reject) => {
-                        gapi.load('client', {callback: resolve, onerror: reject});
-                    });
-                    await gapi.client.init({
-                        apiKey: GOOGLE_API_KEY,
-                        discoveryDocs: DISCOVERY_DOCS,
-                    });
-                }
-                gapi.client.setToken({access_token: accessToken});
+                await gapi.client.init({ apiKey: GOOGLE_API_KEY, discoveryDocs: DISCOVERY_DOCS });
+                gapiInited = true;
+            } catch(e) { console.warn("GAPI Init failed", e); }
+        }
 
-                // Fetch Calendar & Tasks Simultaneously using Promise.all for speed
-                const nowIso = getSystemDate().toISOString();
-                const [calendarRes, taskListRes] = await Promise.all([
+        function handleGoogleAuthClick() {
+            if (gapiInited && gisInited) {
+                if (gapi.client.getToken() === null) {
+                    tokenClient.requestAccessToken({prompt: 'consent'});
+                } else {
+                    tokenClient.requestAccessToken({prompt: ''});
+                }
+            } else {
+                showMobileToast('Sync engine not ready. Check internet connection.');
+            }
+        }
+
+        async function fetchGoogleData() {
+            if (!isAuthenticated) return;
+            showMobileToast('Pulling Workspace Data...');
+            
+            try {
+                const now = new Date();
+                const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+                const timeMax = new Date(now.getFullYear(), now.getMonth() + 2, 1).toISOString();
+
+                // High-speed simultaneous fetching via Promise.all
+                const [calendarRes, tasksListRes] = await Promise.all([
                     gapi.client.calendar.events.list({
                         'calendarId': 'primary',
-                        'timeMin': nowIso,
+                        'timeMin': timeMin,
+                        'timeMax': timeMax,
                         'showDeleted': false,
                         'singleEvents': true,
-                        'maxResults': 20,
                         'orderBy': 'startTime'
                     }),
-                    gapi.client.tasks.tasklists.list({ 'maxResults': 1 })
+                    gapi.client.tasks.tasklists.list()
                 ]);
 
-                // Process Calendar Events
+                // Map Calendar Events
                 const events = calendarRes.result.items;
-                events.forEach(ev => {
-                    const dtStr = (ev.start.dateTime || ev.start.date).split('T')[0];
-                    let tmStr = null;
-                    if(ev.start.dateTime) {
-                        const t = new Date(ev.start.dateTime);
-                        tmStr = `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
-                    }
-
-                    // Prevent duplicates
-                    if(!tasks.some(t => t.googleId === ev.id)) {
-                        tasks.push({
-                            id: Math.random().toString(36).substr(2, 9),
-                            googleId: ev.id,
-                            title: `[Event] ${ev.summary}`,
-                            description: ev.description || "",
-                            date: dtStr,
-                            time: tmStr,
-                            priority: 'medium',
-                            repeat: 'none',
-                            completed: false,
-                            isEvent: true
-                        });
+                events.forEach(event => {
+                    if (event.start && (event.start.dateTime || event.start.date)) {
+                        const evtDateStr = (event.start.dateTime || event.start.date).split('T')[0];
+                        const evtTimeStr = event.start.dateTime ? event.start.dateTime.split('T')[1].substring(0,5) : null;
+                        
+                        if(!tasks.some(t => t.googleId === event.id)) {
+                            tasks.push({
+                                id: Math.random().toString(36).substring(2, 9),
+                                googleId: event.id,
+                                title: event.summary,
+                                description: 'Google Calendar Event',
+                                date: evtDateStr,
+                                time: evtTimeStr,
+                                priority: 'high',
+                                repeat: 'none',
+                                completed: false,
+                                isEvent: true // tag it to render a calendar icon later
+                            });
+                        }
                     }
                 });
 
-                // Process Google Tasks (from primary list)
-                if(taskListRes.result.items && taskListRes.result.items.length > 0) {
-                    const primaryListId = taskListRes.result.items[0].id;
-                    const gTasksRes = await gapi.client.tasks.tasks.list({
-                        'tasklist': primaryListId,
-                        'showCompleted': false,
-                        'maxResults': 20
-                    });
+                // Map Google Tasks
+                if (tasksListRes.result.items && tasksListRes.result.items.length > 0) {
+                    const primaryTaskListId = tasksListRes.result.items[0].id;
+                    const tasksRes = await gapi.client.tasks.tasks.list({ 'tasklist': primaryTaskListId });
+                    const gTasks = tasksRes.result.items || [];
                     
-                    const gTasks = gTasksRes.result.items || [];
                     gTasks.forEach(gt => {
+                        const dateStr = gt.due ? gt.due.split('T')[0] : getSystemDate().toISOString().split('T')[0];
                         if(!tasks.some(t => t.googleId === gt.id)) {
                             tasks.push({
-                                id: Math.random().toString(36).substr(2, 9),
+                                id: Math.random().toString(36).substring(2, 9),
                                 googleId: gt.id,
                                 title: gt.title,
-                                description: gt.notes || "",
-                                date: gt.due ? gt.due.split('T')[0] : getSystemDate().toISOString().split('T')[0],
+                                description: gt.notes || '',
+                                date: dateStr,
                                 time: null,
                                 priority: 'medium',
                                 repeat: 'none',
-                                completed: false
+                                completed: gt.status === 'completed'
                             });
                         }
                     });
                 }
 
-                saveData();
-                switchTab(activeTab); // refresh view
-                showMobileToast("Google Sync Complete");
-                if(statusText) {
-                    statusText.classList.remove('hidden');
-                    statusText.textContent = `Last synced: ${getSystemDate().toLocaleTimeString()}`;
-                }
-
+                saveTasks();
+                forceRenderActiveTab();
+                showMobileToast('Sync Complete');
             } catch (err) {
-                console.error("Sync failed:", err);
-                showMobileToast("Sync failed. Check console.");
-            } finally {
-                if(btn) btn.innerHTML = `<i data-lucide="cloud-cog" class="w-5 h-5"></i> Sync Google Workspace`;
-                try { if(window.lucide) lucide.createIcons(); } catch(e){}
+                console.error(err);
+                showMobileToast('Sync Failed. Check console.');
             }
         }
+        // ==========================================
 
+
+        // System State
+        let tasks = [];
+        let activeTab = 'calendar'; // Set default view to Calendar to match screenshot
+        
+        // Calendar State
+        let currentYear = getSystemDate().getFullYear();
+        let currentMonth = getSystemDate().getMonth();
+        let selectedCalendarDate = getSystemDate().toISOString().split('T')[0];
+        const MONTH_NAMES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+        // Modal Picker states
+        let pickerTarget = 'task';
+        let pickerYear = getSystemDate().getFullYear();
+        let pickerMonth = getSystemDate().getMonth();
+        let selectedTaskDate = getSystemDate().toISOString().split('T')[0];
+        let selectedRepeatEndDate = ""; 
+        let selectedTimeHour = 9;
+        let selectedTimeMin = "00";
+        let selectedTimePeriod = "AM";
+        let hasCustomTime = true; 
+
+        let expandedCards = new Set();
+
+        function getSystemDate() { return new Date(); }
+
+        // Initialization
         window.addEventListener('DOMContentLoaded', () => {
-            try {
-                const sysDate = getSystemDate();
-                currentYear = sysDate.getFullYear();
-                currentMonth = sysDate.getMonth();
-                selectedCalendarDate = sysDate.toISOString().split('T')[0];
-                selectedTaskDate = sysDate.toISOString().split('T')[0];
-
-                const storedTasks = localStorage.getItem('aether_v2_tasks');
-                const storedProjects = localStorage.getItem('aether_v2_projects');
-                
-                if (storedTasks) tasks = JSON.parse(storedTasks);
-                if (storedProjects) projects = JSON.parse(storedProjects);
-                else {
-                    // Default Project
-                    projects = [{ id: 'p_1', name: 'Personal Canvas', desc: 'Default isolated workspace.', status: 'active' }];
-                    saveData();
-                }
-
-                populateProjectDropdowns();
-                updateDatePickerButton('task', selectedTaskDate);
-                updateTimePickerButton();
-
-                updateClock();
-                setInterval(updateClock, 1000);
-                
-                switchTab('today');
-                
-                // Safely create icons
-                try { 
-                    if(window.lucide) {
-                        lucide.createIcons(); 
-                    }
-                } catch(iconErr) {
-                    console.error("Failed to load Lucide Icons:", iconErr);
-                }
-            } catch (initErr) {
-                console.error("Critical error during app initialization:", initErr);
+            const stored = localStorage.getItem('aether_universal_tasks');
+            if (stored) {
+                tasks = JSON.parse(stored);
+            } else {
+                const tDate = getSystemDate().toISOString().split('T')[0];
+                tasks = [
+                    { id: '1', title: 'Read Daily Text', description: '', priority: 'medium', repeat: 'daily', date: tDate, time: '08:00', completed: true },
+                    { id: '2', title: 'Finalize design mockups', description: 'Export visual prototypes for Jo to examine.', priority: 'high', repeat: 'none', date: tDate, time: '14:30', completed: false }
+                ];
+                saveTasks();
             }
+
+            updateDatePickerButton('task', selectedTaskDate);
+            updateTimePickerButton();
+
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            switchTab('calendar');
+            safeRenderIcons();
         });
 
-        function saveData() {
-            localStorage.setItem('aether_v2_tasks', JSON.stringify(tasks));
-            localStorage.setItem('aether_v2_projects', JSON.stringify(projects));
+        function saveTasks() { localStorage.setItem('aether_universal_tasks', JSON.stringify(tasks)); }
+
+        function safeRenderIcons() {
+            try { if(window.lucide) window.lucide.createIcons(); } catch(e) {}
         }
 
         function updateClock() {
@@ -727,53 +696,59 @@
             const s = String(now.getSeconds()).padStart(2, '0');
             const clockEl = document.getElementById('clock');
             if (clockEl) clockEl.textContent = `${h}:${m}:${s}`;
+        }
 
-            if (now.getHours() >= 20) triggerRescheduleCheck(now);
+        function forceRenderActiveTab() {
+            if (activeTab === 'home') renderDashboard();
+            else if (activeTab === 'today') renderToday();
+            else if (activeTab === 'calendar') renderCalendar();
+            else if (activeTab === 'profile') renderProfile();
         }
 
         function switchTab(tabId) {
             activeTab = tabId;
-            closeCustomDrawers();
             
-            const tabs = ['home', 'today', 'calendar', 'projects', 'sync'];
-            tabs.forEach(t => {
-                document.querySelectorAll(`.nav-${t}`).forEach(btn => {
-                    if (t === tabId) btn.classList.add('active');
-                    else btn.classList.remove('active');
-                });
+            const allTabs = ['home', 'today', 'calendar', 'profile', 'projects'];
+            allTabs.forEach(t => {
+                const btnDesk = document.getElementById(`nav-${t}`);
+                const btnMob = document.querySelector(`.nav-${t}.nav-btn-mobile`);
+                
+                if (btnDesk) { if (t === tabId) btnDesk.classList.add('active'); else btnDesk.classList.remove('active'); }
+                if (btnMob) { if (t === tabId) btnMob.classList.add('active'); else btnMob.classList.remove('active'); }
             });
 
-            const views = ['home', 'today', 'calendar', 'add', 'projects', 'sync'];
-            views.forEach(t => {
+            const allViews = ['home', 'today', 'calendar', 'add', 'profile', 'projects'];
+            allViews.forEach(t => {
                 const view = document.getElementById(`view-${t}`);
                 if (view) {
                     if (t === tabId) {
                         view.classList.remove('hidden');
-                        view.style.animation = 'none';
-                        view.offsetHeight; 
-                        view.style.animation = null;
+                        view.style.animation = 'none'; view.offsetHeight; view.style.animation = null;
                     } else {
                         view.classList.add('hidden');
                     }
                 }
             });
 
-            if (tabId === 'calendar') {
-                currentYear = getSystemDate().getFullYear();
-                currentMonth = getSystemDate().getMonth();
-                selectedCalendarDate = getSystemDate().toISOString().split('T')[0];
+            const subtitleEl = document.getElementById('header-subtitle');
+            if (subtitleEl) {
+                if (tabId === 'today') subtitleEl.textContent = "Focus for today";
+                else if (tabId === 'home') subtitleEl.textContent = "What's the plan for today?";
+                else if (tabId === 'calendar') subtitleEl.textContent = "Timeline & Agenda mapping.";
+                else if (tabId === 'add') subtitleEl.textContent = "Create New Entry";
+                else if (tabId === 'profile') subtitleEl.textContent = "System Diagnostics";
             }
 
-            if(tabId === 'home') renderDashboard();
-            else if(tabId === 'today') renderToday();
-            else if(tabId === 'calendar') renderCalendar();
-            else if(tabId === 'projects') renderProjects();
-            
-            try { 
-                if(window.lucide) {
-                    lucide.createIcons(); 
-                }
-            } catch(e){}
+            closeCustomDrawers();
+
+            if (tabId === 'calendar') {
+                const sysDate = getSystemDate();
+                currentYear = sysDate.getFullYear();
+                currentMonth = sysDate.getMonth();
+                selectedCalendarDate = sysDate.toISOString().split('T')[0];
+            }
+
+            forceRenderActiveTab();
         }
 
         function toggleCardExpansion(id) {
@@ -796,22 +771,16 @@
             const isCompleted = task.completed;
             const hasDesc = task.description && task.description.trim() !== "";
             const isExpanded = expandedCards.has(task.id);
-            const isEvent = task.isEvent;
             
             const cardClass = `flat-card p-4 flex flex-col gap-2 ${isCompleted ? 'task-completed' : 'hover:bg-white/5'}`;
+            
             let pColor = '#555'; 
             if(task.priority === 'high') pColor = '#ef4444'; 
             else if(task.priority === 'medium') pColor = '#f59e0b';
 
             let timeLabel = "All Day";
-            let iconType = isEvent ? "calendar" : "clock";
-            if (task.time) timeLabel = formatTimeString(task.time);
-
-            let projBadge = "";
-            if(task.projectId && task.projectId !== 'none') {
-                const p = projects.find(x => x.id === task.projectId);
-                if(p) projBadge = `<span class="text-[9px] uppercase tracking-wider bg-white/10 text-neutral-300 px-2 py-0.5 rounded ml-2">${p.name}</span>`;
-            }
+            let iconType = task.isEvent ? "calendar-range" : "clock";
+            if (task.time) { timeLabel = formatTimeString(task.time); }
 
             return `
                 <div class="${cardClass}" id="card-${task.id}">
@@ -819,25 +788,30 @@
                         <div class="flex items-center gap-4 overflow-hidden flex-1 cursor-pointer" onclick="${hasDesc ? `toggleCardExpansion('${task.id}')` : ''}">
                             <input type="checkbox" class="task-checkbox shrink-0" ${isCompleted ? 'checked' : ''} onclick="event.stopPropagation(); toggleTaskCompletion('${task.id}')">
                             <div class="flex flex-col truncate flex-1">
-                                <span class="text-sm font-bold task-text ${isCompleted ? 'task-text-completed' : 'text-white'} truncate flex items-center gap-2">
+                                <span class="text-sm font-bold task-text ${isCompleted ? 'task-text-completed text-neutral-500' : 'text-white'} truncate flex items-center gap-2">
                                     ${task.title}
-                                    ${!isEvent ? `<span class="w-1.5 h-1.5 rounded-full" style="background-color: ${pColor};"></span>` : ''}
-                                    ${projBadge}
+                                    <span class="w-1.5 h-1.5 rounded-full shadow-sm" style="background-color: ${pColor};"></span>
                                     ${hasDesc ? `<i id="desc-chevron-${task.id}" data-lucide="chevron-down" class="w-4 h-4 text-neutral-500 transition-transform" style="transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}"></i>` : ''}
                                 </span>
                                 <div class="flex gap-4 mt-1">
-                                    <span class="text-[10px] text-neutral-400 mono flex items-center gap-1.5 font-bold">
-                                        <i data-lucide="${iconType}" class="w-3 h-3 text-neutral-500"></i> ${timeLabel}
+                                    <span class="text-[10px] text-neutral-500 mono flex items-center gap-1.5 font-bold uppercase tracking-widest">
+                                        <i data-lucide="${iconType}" class="w-3.5 h-3.5 text-neutral-500"></i> ${timeLabel}
                                     </span>
+                                    ${task.repeat !== 'none' ? `
+                                        <span class="text-[10px] text-neutral-400 uppercase flex items-center gap-1.5 font-bold tracking-widest">
+                                            <i data-lucide="repeat" class="w-3 h-3"></i>
+                                            ${task.repeat === 'custom' ? 'Custom Repeat' : task.repeat}
+                                        </span>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
-                        <button onclick="deleteTask('${task.id}')" class="p-2 shrink-0 text-neutral-500 hover:text-white transition bg-white/5 rounded-lg border border-white/10">
+                        <button onclick="deleteTask('${task.id}')" class="p-2 shrink-0 text-neutral-600 hover:text-red-400 transition bg-black/20 rounded-lg border border-white/5 hover:border-red-500/30">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
                     ${hasDesc ? `
-                        <div id="desc-container-${task.id}" class="${isExpanded ? '' : 'hidden'} pl-9 pr-4 pb-1 text-xs text-neutral-400 border-t border-white/10 pt-2 mt-2 leading-relaxed">
+                        <div id="desc-container-${task.id}" class="${isExpanded ? '' : 'hidden'} pl-10 pr-4 pb-1 text-[11px] text-neutral-400 border-t border-white/10 pt-3 mt-2 leading-relaxed text-left font-medium">
                             ${task.description}
                         </div>
                     ` : ''}
@@ -857,16 +831,19 @@
         }
 
         function renderDashboard() {
+            const listPending = document.getElementById('list-pending');
+            const listCompleted = document.getElementById('list-completed');
+            
             const pending = tasks.filter(t => !t.completed).sort((a,b) => `${a.date} ${a.time || '23:59'}`.localeCompare(`${b.date} ${b.time || '23:59'}`));
             const completed = tasks.filter(t => t.completed).sort((a,b) => `${b.date} ${b.time || '00:00'}`.localeCompare(`${a.date} ${a.time || '00:00'}`)); 
 
             document.getElementById('stat-pending').textContent = pending.length;
             document.getElementById('stat-completed').textContent = completed.length;
 
-            document.getElementById('list-pending').innerHTML = pending.length > 0 ? pending.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-500 italic p-6 text-center border border-dashed border-white/10 rounded-xl">All caught up.</div>`;
-            document.getElementById('list-completed').innerHTML = completed.length > 0 ? completed.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-600 italic">No history.</div>`;
-            
-            try { if(window.lucide) lucide.createIcons(); } catch(e){}
+            listPending.innerHTML = pending.length > 0 ? pending.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-500 italic p-6 text-center border border-dashed border-white/10 rounded-2xl">No pending tasks. You're completely caught up.</div>`;
+            listCompleted.innerHTML = completed.length > 0 ? completed.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-600 italic px-2">No tasks completed yet.</div>`;
+
+            safeRenderIcons();
         }
 
         function renderToday() {
@@ -882,126 +859,30 @@
             
             const dateOpts = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
             document.getElementById('today-date-subtitle').textContent = sysToday.toLocaleDateString('en-US', dateOpts);
-            document.getElementById('today-progress').textContent = `${pct}%`;
             
+            document.getElementById('today-progress').textContent = `${pct}%`;
             setTimeout(() => {
                 const bar = document.getElementById('today-progress-bar');
                 if(bar) bar.style.width = `${pct}%`;
             }, 50);
             
             const listPending = document.getElementById('list-today-pending');
+            const listCompleted = document.getElementById('list-today-completed');
             const compHeader = document.getElementById('today-completed-header');
             
-            if (pending.length > 0) listPending.innerHTML = pending.map(generateTaskCardHTML).join('');
-            else if (total > 0) listPending.innerHTML = `<div class="text-xs text-neutral-400 italic p-6 text-center border border-dashed border-white/10 rounded-xl flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>Focus complete.</div>`;
-            else listPending.innerHTML = `<div class="text-xs text-neutral-500 italic p-6 text-center border border-dashed border-white/10 rounded-xl">Focus is clear.</div>`;
+            if (pending.length > 0) {
+                listPending.innerHTML = pending.map(generateTaskCardHTML).join('');
+            } else if (total > 0) {
+                listPending.innerHTML = `<div class="text-xs text-neutral-400 italic p-8 text-center border border-dashed border-white/10 rounded-2xl flex flex-col items-center gap-4 bg-black/20"><i data-lucide="check-circle" class="w-8 h-8 text-white"></i><span>Focus complete. All tasks finished for today.</span></div>`;
+            } else {
+                listPending.innerHTML = `<div class="text-xs text-neutral-500 italic p-8 text-center border border-dashed border-white/10 rounded-2xl bg-black/20">Your focus is clear. No tasks scheduled for today.</div>`;
+            }
                 
-            document.getElementById('list-today-completed').innerHTML = completed.length > 0 ? completed.map(generateTaskCardHTML).join('') : '';
+            listCompleted.innerHTML = completed.length > 0 ? completed.map(generateTaskCardHTML).join('') : '';
             if(completed.length > 0) compHeader.classList.remove('hidden');
             else compHeader.classList.add('hidden');
             
-            try { if(window.lucide) lucide.createIcons(); } catch(e){}
-        }
-
-        function populateProjectDropdowns() {
-            const select = document.getElementById('task-project');
-            if(!select) return;
-            select.innerHTML = `<option value="none" class="bg-black text-white">-- No Project --</option>`;
-            projects.forEach(p => {
-                select.innerHTML += `<option value="${p.id}" class="bg-black text-white">${p.name}</option>`;
-            });
-        }
-
-        function renderProjects() {
-            const list = document.getElementById('projects-list');
-            list.innerHTML = projects.map(p => {
-                const pTasks = tasks.filter(t => t.projectId === p.id);
-                const comp = pTasks.filter(t => t.completed).length;
-                const total = pTasks.length;
-                const pct = total === 0 ? 0 : Math.round((comp/total)*100);
-                
-                return `
-                    <div class="flat-card p-4 cursor-pointer hover:border-white/30 transition ${selectedProjectId === p.id ? 'border-white/40 bg-white/5' : ''}" onclick="selectProject('${p.id}')">
-                        <h4 class="text-sm font-bold text-white mb-1 flex items-center justify-between">
-                            ${p.name}
-                            <span class="text-[9px] font-mono text-neutral-500">${pct}%</span>
-                        </h4>
-                        <div class="w-full h-1 bg-black/50 rounded-full overflow-hidden mt-2 border border-white/5">
-                            <div class="h-full bg-white transition-all" style="width: ${pct}%"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            renderProjectDetail();
-            try { if(window.lucide) lucide.createIcons(); } catch(e){}
-        }
-
-        function selectProject(id) {
-            selectedProjectId = id;
-            renderProjects();
-        }
-
-        function renderProjectDetail() {
-            const pane = document.getElementById('project-detail-pane');
-            if(!selectedProjectId) return;
-            
-            const p = projects.find(x => x.id === selectedProjectId);
-            if(!p) return;
-
-            const pTasks = tasks.filter(t => t.projectId === p.id);
-            
-            pane.innerHTML = `
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white">${p.name}</h2>
-                        <p class="text-xs text-neutral-400 mt-2 leading-relaxed max-w-lg">${p.desc || "No description provided."}</p>
-                    </div>
-                    <button onclick="deleteProject('${p.id}')" class="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                
-                <div class="border-t border-white/10 pt-6 mt-2">
-                    <h3 class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-4">Workspace Tasks</h3>
-                    <div class="flex flex-col gap-2" id="detail-project-tasks"></div>
-                </div>
-            `;
-
-            const taskContainer = document.getElementById('detail-project-tasks');
-            if(pTasks.length > 0) taskContainer.innerHTML = pTasks.map(generateTaskCardHTML).join('');
-            else taskContainer.innerHTML = `<div class="text-xs text-neutral-500 italic p-4 text-center">No tasks assigned to this workspace.</div>`;
-        }
-
-        function openNewProjectModal() {
-            document.getElementById('custom-picker-overlay').classList.add('open');
-            document.getElementById('custom-project-modal').classList.add('open');
-        }
-
-        function saveNewProject() {
-            const name = document.getElementById('new-project-name').value.trim();
-            const desc = document.getElementById('new-project-desc').value.trim();
-            if(!name) return;
-
-            const newProj = { id: 'p_' + Math.random().toString(36).substr(2, 9), name, desc, status: 'active' };
-            projects.push(newProj);
-            saveData();
-            populateProjectDropdowns();
-            document.getElementById('new-project-name').value = '';
-            document.getElementById('new-project-desc').value = '';
-            closeCustomDrawers();
-            selectProject(newProj.id);
-            showMobileToast("Workspace created.");
-        }
-
-        function deleteProject(id) {
-            projects = projects.filter(p => p.id !== id);
-            tasks.forEach(t => { if(t.projectId === id) t.projectId = 'none'; });
-            selectedProjectId = null;
-            saveData();
-            renderProjects();
-            populateProjectDropdowns();
-            showMobileToast("Workspace deleted.");
+            safeRenderIcons();
         }
 
         function changeMonth(direction) {
@@ -1022,7 +903,7 @@
 
             for (let i = firstDay - 1; i >= 0; i--) {
                 const btn = document.createElement('div');
-                btn.className = "h-12 md:h-14 rounded-xl flex items-center justify-center text-xs font-bold text-neutral-700 bg-black/20 border border-transparent";
+                btn.className = "h-14 md:h-16 rounded-2xl flex items-center justify-center text-[11px] font-bold text-neutral-700 bg-black/20 border border-transparent";
                 btn.innerHTML = `<span>${prevDays - i}</span>`;
                 grid.appendChild(btn);
             }
@@ -1034,17 +915,17 @@
                 const hasTasks = tasks.some(t => t.date === dayStr);
                 
                 const btn = document.createElement('button');
-                btn.className = "h-12 md:h-14 rounded-xl flex flex-col justify-center items-center relative text-xs font-bold transition-colors border border-transparent ";
+                btn.className = "h-14 md:h-16 rounded-xl flex flex-col justify-center items-center relative text-sm font-bold transition-colors border border-transparent ";
                 
-                if (isSelected) btn.className += "bg-white text-black shadow-lg ";
-                else if (isToday) btn.className += "border border-white/30 bg-white/10 text-white ";
-                else btn.className += "text-neutral-400 hover:bg-white/5 hover:border-white/10 bg-black/40 ";
+                if (isSelected) btn.className += "bg-white text-black shadow-[0_4px_15px_rgba(255,255,255,0.2)] ";
+                else if (isToday) btn.className += "border border-white/20 bg-white/10 text-white ";
+                else btn.className += "text-neutral-400 hover:bg-white/5 hover:border-white/10 bg-[#111] ";
                 
                 btn.onclick = () => { selectedCalendarDate = dayStr; renderCalendar(); };
                 btn.innerHTML = `<span>${i}</span>`;
                 if (hasTasks) {
                     const dotColor = isSelected ? 'bg-black' : 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]';
-                    btn.innerHTML += `<div class="w-1.5 h-1.5 rounded-full absolute bottom-1.5 ${dotColor}"></div>`;
+                    btn.innerHTML += `<div class="w-1.5 h-1.5 rounded-full absolute bottom-2 ${dotColor}"></div>`;
                 }
                 grid.appendChild(btn);
             }
@@ -1053,7 +934,7 @@
             const remaining = (7 - (totalCells % 7)) % 7;
             for (let i = 1; i <= remaining; i++) {
                 const btn = document.createElement('div');
-                btn.className = "h-12 md:h-14 rounded-xl flex items-center justify-center text-xs font-bold text-neutral-700 bg-black/20 border border-transparent";
+                btn.className = "h-14 md:h-16 rounded-2xl flex items-center justify-center text-[11px] font-bold text-neutral-700 bg-black/20 border border-transparent";
                 btn.innerHTML = `<span>${i}</span>`;
                 grid.appendChild(btn);
             }
@@ -1063,19 +944,25 @@
         function renderAgenda() {
             const panel = document.getElementById('calendar-agenda-panel');
             const list = document.getElementById('agenda-list');
-            if(!selectedCalendarDate) { panel.classList.add('hidden'); return; }
+            
+            if(!selectedCalendarDate) {
+                panel.classList.add('hidden');
+                return;
+            }
             panel.classList.remove('hidden');
 
             const [y, m, d] = selectedCalendarDate.split('-');
             document.getElementById('agenda-date-title').textContent = `${MONTH_NAMES[parseInt(m, 10)-1]} ${parseInt(d, 10)}, ${y}`;
 
-            const dt = tasks.filter(t => t.date === selectedCalendarDate).sort((a,b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
-            document.getElementById('agenda-count').textContent = `${dt.length} Scheduled`;
+            const dayTasks = tasks.filter(t => t.date === selectedCalendarDate).sort((a,b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
+            document.getElementById('agenda-count').textContent = `${dayTasks.length} Scheduled`;
 
-            if(dt.length === 0) list.innerHTML = `<p class="text-xs text-neutral-500 italic text-center py-6">No tasks scheduled.</p>`;
-            else list.innerHTML = dt.map(generateTaskCardHTML).join('');
-            
-            try { if(window.lucide) lucide.createIcons(); } catch(e){}
+            if(dayTasks.length === 0) {
+                list.innerHTML = `<p class="text-xs text-neutral-500 italic text-center py-6">No tasks scheduled for this date.</p>`;
+            } else {
+                list.innerHTML = dayTasks.map(generateTaskCardHTML).join('');
+                safeRenderIcons();
+            }
         }
 
         function triggerAddTaskFromTimeline() {
@@ -1084,14 +971,37 @@
             switchTab('add');
         }
 
+        function renderProfile() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            document.getElementById('profile-total-tasks').textContent = total;
+            document.getElementById('profile-total-completed').textContent = completed;
+            
+            safeRenderIcons();
+        }
+
         function openDatePicker(target) {
             pickerTarget = target;
             let initialDate = (target === 'task') ? selectedTaskDate : (selectedRepeatEndDate || getSystemDate().toISOString().split('T')[0]);
+            
             const [y, m, d] = initialDate.split('-');
-            pickerYear = parseInt(y, 10); pickerMonth = parseInt(m, 10) - 1;
+            pickerYear = parseInt(y, 10);
+            pickerMonth = parseInt(m, 10) - 1;
+
             renderPickerCalendar();
+            
             document.getElementById('custom-picker-overlay').classList.add('open');
             document.getElementById('custom-date-picker').classList.add('open');
+        }
+
+        function closeCustomDrawers() {
+            const els = ['custom-picker-overlay', 'custom-date-picker', 'custom-time-picker'];
+            els.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('open');
+            });
         }
 
         function navigatePickerMonth(dir) {
@@ -1105,25 +1015,32 @@
             document.getElementById('picker-month-display').textContent = `${MONTH_NAMES[pickerMonth]} ${pickerYear}`;
             const grid = document.getElementById('picker-calendar-grid');
             grid.innerHTML = '';
+
             const firstDay = new Date(pickerYear, pickerMonth, 1).getDay();
             const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
             const prevDays = new Date(pickerYear, pickerMonth, 0).getDate();
 
             for (let i = firstDay - 1; i >= 0; i--) {
                 const dummy = document.createElement('div');
-                dummy.className = "h-8 flex items-center justify-center text-[10px] text-neutral-700 font-bold";
-                dummy.innerText = prevDays - i; grid.appendChild(dummy);
+                dummy.className = "h-8 flex items-center justify-center text-[10px] text-neutral-700 font-bold cursor-default";
+                dummy.innerText = prevDays - i;
+                grid.appendChild(dummy);
             }
 
             for (let i = 1; i <= daysInMonth; i++) {
                 const formattedDate = `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 const btn = document.createElement('button');
                 btn.type = "button";
-                btn.className = "h-8 rounded-md text-[10px] font-bold transition flex items-center justify-center border border-transparent ";
+                btn.className = "h-8 rounded-full text-[10px] font-bold transition-colors flex items-center justify-center border border-transparent ";
                 
-                let isSelected = (pickerTarget === 'task' && formattedDate === selectedTaskDate) || (pickerTarget === 'repeat-end' && formattedDate === selectedRepeatEndDate);
-                if (isSelected) btn.className += "bg-white text-black shadow";
-                else btn.className += "text-neutral-300 hover:bg-white/10";
+                let isSelected = (pickerTarget === 'task' && formattedDate === selectedTaskDate) || 
+                                 (pickerTarget === 'repeat-end' && formattedDate === selectedRepeatEndDate);
+
+                if (isSelected) {
+                    btn.className += "bg-white text-black shadow-md";
+                } else {
+                    btn.className += "text-neutral-300 hover:bg-white/10 hover:border-white/10";
+                }
 
                 btn.innerText = i;
                 btn.onclick = () => {
@@ -1140,6 +1057,7 @@
             const [y, m, d] = dateStr.split('-');
             const displayStr = `${MONTH_NAMES[parseInt(m, 10)-1]} ${parseInt(d, 10)}, ${y}`;
             if (target === 'task') document.getElementById('task-date-display').textContent = displayStr;
+            else if (target === 'repeat-end') document.getElementById('repeat-end-date-display').textContent = displayStr;
         }
 
         function toggleTimeVisibility() {
@@ -1159,8 +1077,9 @@
             const hoursGrid = document.getElementById('picker-hours-grid');
             hoursGrid.innerHTML = '';
             for (let i = 1; i <= 12; i++) {
-                const btn = document.createElement('button'); btn.type = "button";
-                btn.className = `py-2 rounded-lg text-xs font-bold border transition ${selectedTimeHour === i ? 'bg-white text-black border-white' : 'border-white/10 text-neutral-400 hover:bg-white/5'}`;
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = `py-2 rounded-xl text-xs font-bold border transition ${selectedTimeHour === i ? 'bg-white text-black border-white shadow-md' : 'border-white/10 text-neutral-400 hover:bg-white/10'}`;
                 btn.innerText = i;
                 btn.onclick = () => { selectedTimeHour = i; renderTimePickerComponents(); updateTimePickerButton(); };
                 hoursGrid.appendChild(btn);
@@ -1168,9 +1087,11 @@
 
             const minsGrid = document.getElementById('picker-minutes-grid');
             minsGrid.innerHTML = '';
-            ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].forEach(min => {
-                const btn = document.createElement('button'); btn.type = "button";
-                btn.className = `py-2 rounded-lg text-xs font-bold border transition ${selectedTimeMin === min ? 'bg-white text-black border-white' : 'border-white/10 text-neutral-400 hover:bg-white/5'}`;
+            const minSteps = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
+            minSteps.forEach(min => {
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = `py-2 rounded-xl text-xs font-bold border transition ${selectedTimeMin === min ? 'bg-white text-black border-white shadow-md' : 'border-white/10 text-neutral-400 hover:bg-white/10'}`;
                 btn.innerText = min;
                 btn.onclick = () => { selectedTimeMin = min; renderTimePickerComponents(); updateTimePickerButton(); };
                 minsGrid.appendChild(btn);
@@ -1178,23 +1099,25 @@
 
             const btnAM = document.getElementById('period-am');
             const btnPM = document.getElementById('period-pm');
+            
             if (selectedTimePeriod === 'AM') {
-                btnAM.className = "flex-1 py-3 rounded-xl text-sm font-bold bg-white text-black";
-                btnPM.className = "flex-1 py-3 rounded-xl text-sm font-bold border border-white/10 text-neutral-400 hover:bg-white/5";
+                btnAM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center bg-white text-black border-white shadow-md";
+                btnPM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center border-white/10 text-neutral-400 hover:bg-white/10";
             } else {
-                btnPM.className = "flex-1 py-3 rounded-xl text-sm font-bold bg-white text-black";
-                btnAM.className = "flex-1 py-3 rounded-xl text-sm font-bold border border-white/10 text-neutral-400 hover:bg-white/5";
+                btnPM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center bg-white text-black border-white shadow-md";
+                btnAM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center border-white/10 text-neutral-400 hover:bg-white/10";
             }
         }
 
         function setPickerPeriod(p) { selectedTimePeriod = p; renderTimePickerComponents(); updateTimePickerButton(); }
+
         function updateTimePickerButton() { document.getElementById('task-time-display').textContent = `${selectedTimeHour}:${selectedTimeMin} ${selectedTimePeriod}`; }
 
         function handleAddTask(e) {
             e.preventDefault();
             const title = document.getElementById('task-title').value.trim();
             const description = document.getElementById('task-desc').value.trim();
-            const projectId = document.getElementById('task-project').value;
+            const priority = 'medium';
 
             if(!title) return;
 
@@ -1208,98 +1131,52 @@
 
             const newTask = {
                 id: Math.random().toString(36).substring(2, 9),
-                title, description, projectId, date: selectedTaskDate, time: formattedTime,
-                priority: 'medium', repeat: 'none', completed: false
+                title, description, date: selectedTaskDate, time: formattedTime,
+                priority, repeat: 'none', completed: false, isEvent: false
             };
 
             tasks.push(newTask);
-            saveData();
+            saveTasks();
             showMobileToast('Task added to database');
 
             document.getElementById('add-task-form').reset();
             selectedTaskDate = getSystemDate().toISOString().split('T')[0];
             updateDatePickerButton('task', selectedTaskDate);
+            document.getElementById('toggle-time').checked = true;
             hasCustomTime = true;
             document.getElementById('time-input-container').classList.remove('hidden');
 
-            switchTab('today');
+            switchTab('calendar');
         }
 
         function toggleTaskCompletion(id) {
             const task = tasks.find(t => t.id === id);
             if(task) {
                 task.completed = !task.completed;
-                saveData();
-                if(activeTab === 'home') renderDashboard();
-                else if(activeTab === 'today') renderToday();
-                else if(activeTab === 'calendar') renderCalendar();
-                else if(activeTab === 'projects') renderProjects();
+                saveTasks();
+                forceRenderActiveTab();
             }
         }
 
         function deleteTask(id) {
             tasks = tasks.filter(t => t.id !== id);
-            saveData();
-            if(activeTab === 'home') renderDashboard();
-            else if(activeTab === 'today') renderToday();
-            else if(activeTab === 'calendar') renderCalendar();
-            else if(activeTab === 'projects') renderProjects();
-            showMobileToast('Task deleted');
-        }
-
-        function triggerRescheduleCheck(now) {
-            const todayStr = now.toISOString().split('T')[0];
-            const lastPromptDate = localStorage.getItem('aether_v2_last_prompt');
-            if (lastPromptDate === todayStr) return; 
-
-            const overdueTasks = tasks.filter(t => !t.completed && t.date <= todayStr);
-            if (overdueTasks.length === 0) return; 
-
-            const previewContainer = document.getElementById('reschedule-tasks-preview');
-            previewContainer.innerHTML = overdueTasks.map(t => `
-                <div class="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl">
-                    <span class="text-xs text-white truncate font-bold">${t.title}</span>
-                    <span class="text-[10px] text-neutral-500 font-mono">${t.date}</span>
-                </div>
-            `).join('');
-
-            document.getElementById('custom-picker-overlay').classList.add('open');
-            document.getElementById('custom-reschedule-drawer').classList.add('open');
-            try { if(window.lucide) lucide.createIcons(); } catch(e){}
-        }
-
-        function dismissReschedulePrompt() {
-            const todayStr = getSystemDate().toISOString().split('T')[0];
-            localStorage.setItem('aether_v2_last_prompt', todayStr);
-            closeCustomDrawers();
-        }
-
-        function executeReschedule() {
-            const todayStr = getSystemDate().toISOString().split('T')[0];
-            const tomorrow = getSystemDate();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
-            let count = 0;
-            tasks.forEach(t => { if (!t.completed && t.date <= todayStr) { t.date = tomorrowStr; count++; } });
-
-            if (count > 0) { saveData(); showMobileToast(`${count} tasks moved to tomorrow`); }
-
-            localStorage.setItem('aether_v2_last_prompt', todayStr);
-            closeCustomDrawers();
-            if(activeTab === 'home') renderDashboard();
-            else if(activeTab === 'today') renderToday();
-            else if(activeTab === 'calendar') renderCalendar();
+            saveTasks();
+            forceRenderActiveTab();
+            showMobileToast('Task permanently deleted');
         }
 
         function showMobileToast(msg) {
-            const container = document.getElementById('toast-container');
+            const container = document.getElementById('desktop-toast-container');
             const t = document.createElement('div');
-            t.className = "bg-white text-black px-5 py-4 rounded-2xl shadow-2xl text-xs font-bold flex items-center justify-between toast-enter";
+            t.className = "bg-white text-black px-5 py-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 text-xs font-bold flex items-center justify-between toast-enter";
             t.innerHTML = `<span>${msg}</span><i data-lucide="info" class="w-4 h-4 text-neutral-400"></i>`;
             container.appendChild(t);
-            try { if(window.lucide) lucide.createIcons(); } catch(e){}
-            setTimeout(() => { t.classList.replace('toast-enter', 'toast-leave'); setTimeout(() => t.remove(), 400); }, 3000);
+            safeRenderIcons();
+
+            setTimeout(() => {
+                t.classList.replace('toast-enter', 'toast-leave');
+                setTimeout(() => t.remove(), 400);
+            }, 3000);
         }
     </script>
 </body>
