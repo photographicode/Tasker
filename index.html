@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title>Aether - Command Canvas</title>
+    <title>Aether - Desktop Command</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,17 +12,16 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Google Identity & API -->
-    <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSync()"></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <!-- Google Identity & API (Robust Dual-Load Setup) -->
+    <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded()"></script>
+    <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
 
     <style>
         :root {
-            /* Exact Liquid Glass aesthetics from the reference image */
-            --glass-base: rgba(10, 10, 10, 0.35);
-            --glass-card: rgba(20, 20, 20, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --glass-border-light: rgba(255, 255, 255, 0.12);
+            --glass-base: rgba(8, 8, 8, 0.75); /* Much darker background for legibility */
+            --glass-card: rgba(20, 20, 20, 0.65); /* Deeper card backgrounds */
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-light: rgba(255, 255, 255, 0.15);
         }
 
         html, body {
@@ -30,7 +29,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevents white space cutoff bug */
+            overflow: hidden;
             background-color: #000;
         }
 
@@ -42,6 +41,15 @@
             font-family: 'Inter', sans-serif;
             color: #e2e8f0;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Global Dark Overlay to ensure bright parts of image don't wash out text */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4); 
+            z-index: -1;
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
@@ -72,14 +80,14 @@
         .flat-card:hover { border-color: var(--glass-border-light); }
         
         .flat-input {
-            background: rgba(255,255,255,0.03);
+            background: rgba(0,0,0,0.5);
             border: 1px solid var(--glass-border);
             color: white;
             transition: all 0.2s ease;
         }
         .flat-input:focus { 
-            border-color: rgba(255,255,255,0.2); 
-            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.3); 
+            background: rgba(0,0,0,0.8);
             outline: none; 
         }
 
@@ -117,7 +125,7 @@
         .custom-modal {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -45%) scale(0.95);
-            background: rgba(15, 15, 15, 0.85);
+            background: rgba(15, 15, 15, 0.95);
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
             border: 1px solid var(--glass-border-light);
@@ -132,7 +140,7 @@
 
         .modal-overlay {
             position: fixed; inset: 0;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             z-index: 90; opacity: 0; pointer-events: none;
@@ -152,9 +160,8 @@
 </head>
 <body class="flex flex-row w-full h-full overflow-hidden bg-black">
 
-    <!-- LEFT COLUMN: Ambient Desktop Display -->
     <aside class="relative hidden lg:flex flex-col w-[350px] xl:w-[400px] flex-shrink-0 border-r border-white/5 h-full overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-[rgba(0,0,0,0.1)] via-[rgba(0,0,0,0.6)] to-[rgba(0,0,0,0.85)] z-0"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[rgba(0,0,0,0.2)] via-[rgba(0,0,0,0.7)] to-[rgba(0,0,0,0.9)] z-0"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-0"></div>
 
         <div class="relative z-10 p-10 flex flex-col h-full justify-between">
@@ -172,23 +179,22 @@
     <!-- RIGHT COLUMN: Interactive Command Canvas -->
     <main class="flex-1 flex flex-col relative h-full glass-panel overflow-hidden">
         
-        <!-- TOP NAVIGATION BAR (Tablet/Desktop) -->
-        <nav class="hidden md:flex h-20 shrink-0 border-b border-white/10 px-8 xl:px-12 items-center justify-between z-40 bg-black/40 backdrop-blur-2xl">
+        <nav class="hidden md:flex h-20 shrink-0 border-b border-white/10 px-8 xl:px-12 items-center justify-between z-40 bg-[var(--glass-base)] backdrop-blur-xl">
             <div class="flex items-center gap-2">
-                <button onclick="switchTab('today')" id="nav-today" class="nav-btn flex items-center gap-2 px-5 py-2.5">
-                    <i data-lucide="sun" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Today</span>
+                <button onclick="switchTab('today')" id="nav-today" class="nav-btn active flex items-center gap-2 px-5 py-2.5">
+                    <span class="text-xs font-semibold tracking-wide">Today</span>
                 </button>
                 <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex items-center gap-2 px-5 py-2.5">
-                    <i data-lucide="layout-grid" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Dashboard</span>
+                    <span class="text-xs font-semibold tracking-wide">Dashboard</span>
                 </button>
                 <button onclick="switchTab('projects')" id="nav-projects" class="nav-btn flex items-center gap-2 px-5 py-2.5">
-                    <i data-lucide="folder" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Projects</span>
+                    <span class="text-xs font-semibold tracking-wide">Projects</span>
                 </button>
-                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn active flex items-center gap-2 px-5 py-2.5">
-                    <i data-lucide="calendar-days" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Timeline</span>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn flex items-center gap-2 px-5 py-2.5">
+                    <span class="text-xs font-semibold tracking-wide">Timeline</span>
                 </button>
                 <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex items-center gap-2 px-5 py-2.5">
-                    <i data-lucide="user" class="w-4 h-4"></i><span class="text-xs font-semibold tracking-wide">Profile</span>
+                    <span class="text-xs font-semibold tracking-wide">Profile</span>
                 </button>
             </div>
             <button onclick="switchTab('add')" class="px-6 py-2.5 bg-white text-black rounded-full text-xs font-bold hover:bg-neutral-200 transition-transform flex items-center gap-2 shadow-[0_4px_15px_rgba(255,255,255,0.2)]">
@@ -199,7 +205,6 @@
         <section class="flex-1 overflow-y-auto p-6 md:p-8 xl:p-12 relative pb-28 md:pb-12">
             <div class="max-w-4xl w-full mx-auto">
                 
-                <!-- VIEW: DASHBOARD -->
                 <div id="view-home" class="view-enter hidden">
                     <div class="flex gap-4 mb-10">
                         <div class="flat-card flex-1 p-6 flex flex-col justify-center">
@@ -213,7 +218,7 @@
                     </div>
 
                     <div class="mb-12">
-                        <h2 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider flex items-center gap-2"><i data-lucide="list" class="w-4 h-4"></i> All Pending Tasks</h2>
+                        <h2 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider flex items-center gap-2"><i data-lucide="list" class="w-4 h-4 text-neutral-400"></i> All Pending Tasks</h2>
                         <div id="list-pending" class="flex flex-col gap-3"></div>
                     </div>
 
@@ -223,16 +228,17 @@
                     </div>
                 </div>
 
-                <!-- VIEW: TODAY -->
-                <div id="view-today" class="view-enter hidden">
+                <div id="view-today" class="view-enter">
                     <div class="flex justify-between items-end mb-8 pt-2">
                         <div>
                             <h2 class="text-3xl font-bold text-white tracking-tight">Today's Focus</h2>
-                            <p class="text-sm text-neutral-400 mt-2 font-medium" id="today-date-subtitle">Date</p>
+                            <p class="text-sm text-neutral-400 mt-2 font-medium flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-4 h-4"></i> <span id="today-date-subtitle">Date</span>
+                            </p>
                         </div>
                         <div class="text-right">
                             <span id="today-progress" class="text-4xl font-bold text-white mono tracking-tighter">0%</span>
-                            <div class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Completion</div>
+                            <div class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mt-1">Daily Completion</div>
                         </div>
                     </div>
 
@@ -241,7 +247,7 @@
                     </div>
 
                     <div class="mb-10">
-                        <h2 class="text-xs font-bold text-neutral-400 mb-4 uppercase tracking-widest flex items-center gap-2"><i data-lucide="target" class="w-4 h-4"></i> Scheduled Tasks</h2>
+                        <h2 class="text-xs font-bold text-neutral-400 mb-4 uppercase tracking-widest flex items-center gap-2">Scheduled Tasks</h2>
                         <div id="list-today-pending" class="flex flex-col gap-3"></div>
                     </div>
 
@@ -251,7 +257,6 @@
                     </div>
                 </div>
 
-                <!-- VIEW: PROJECTS -->
                 <div id="view-projects" class="view-enter hidden">
                     <div class="flex justify-between items-center mb-10 pt-2">
                         <h2 class="text-3xl font-bold text-white tracking-tight">Workspaces</h2>
@@ -260,21 +265,20 @@
                         </button>
                     </div>
                     
-                    <div class="flex flex-col items-center justify-center p-16 border border-dashed border-white/10 rounded-3xl bg-black/20">
+                    <div class="flex flex-col items-center justify-center p-16 border border-dashed border-white/10 rounded-3xl bg-black/40">
                         <i data-lucide="box" class="w-12 h-12 text-neutral-600 mb-4"></i>
                         <h3 class="text-lg font-semibold text-white">No active projects</h3>
                         <p class="text-sm text-neutral-400 text-center max-w-sm mt-2">Create a workspace to group related tasks, notes, and milestones.</p>
                     </div>
                 </div>
 
-                <!-- VIEW: TIMELINE -->
-                <div id="view-calendar" class="view-enter">
-                    <div class="relative flex justify-center items-center mb-10 pt-4">
+                <div id="view-calendar" class="view-enter hidden">
+                    <div class="flex justify-between items-center mb-8 pt-2">
                         <h2 class="text-3xl font-bold text-white tracking-tight">Timeline</h2>
-                        <div class="absolute right-0 flex items-center gap-3 bg-[#111] p-1.5 rounded-full border border-white/10 shadow-lg">
-                            <button onclick="changeMonth(-1)" class="text-neutral-400 hover:text-white p-1 hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        <div class="flex items-center gap-4 bg-[var(--glass-card)] p-1.5 rounded-full border border-white/10 shadow-lg">
+                            <button onclick="changeMonth(-1)" class="text-neutral-400 hover:text-white p-1.5 hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
                             <span id="calendar-month-year" class="text-xs font-bold uppercase tracking-widest text-white mono w-24 text-center">JUN 2026</span>
-                            <button onclick="changeMonth(1)" class="text-neutral-400 hover:text-white p-1 hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                            <button onclick="changeMonth(1)" class="text-neutral-400 hover:text-white p-1.5 hover:bg-white/10 rounded-full transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
                         </div>
                     </div>
 
@@ -290,7 +294,7 @@
 
                     <div id="calendar-days-grid" class="grid grid-cols-7 gap-2 mb-10"></div>
 
-                    <div id="calendar-agenda-panel" class="hidden pb-4 bg-[var(--glass-card)] border border-[var(--glass-border)] rounded-3xl p-6 shadow-2xl mt-8">
+                    <div id="calendar-agenda-panel" class="hidden pb-4 bg-[var(--glass-card)] border border-[var(--glass-border)] rounded-3xl p-6 shadow-2xl">
                         <div class="flex justify-between items-end mb-6 border-b border-white/10 pb-4">
                             <h3 id="agenda-date-title" class="text-lg font-bold text-white uppercase tracking-wider">Date</h3>
                             <span class="text-[10px] text-white uppercase tracking-widest font-bold bg-white/10 border border-white/10 px-3 py-1.5 rounded-full" id="agenda-count">0 Scheduled</span>
@@ -305,7 +309,6 @@
                     </div>
                 </div>
 
-                <!-- VIEW: NEW TASK -->
                 <div id="view-add" class="view-enter hidden max-w-2xl mx-auto">
                     <h2 class="text-3xl font-bold text-white mb-8 pt-2 tracking-tight">Create Entry</h2>
 
@@ -363,7 +366,6 @@
                     </form>
                 </div>
 
-                <!-- VIEW: PROFILE -->
                 <div id="view-profile" class="view-enter hidden">
                     <div class="flex flex-col items-center justify-center pt-10 pb-12 border-b border-white/10 flat-card rounded-3xl mb-8">
                         <div class="w-24 h-24 rounded-full border-2 border-white/20 bg-black/40 flex items-center justify-center mb-6 shadow-xl">
@@ -397,7 +399,7 @@
                     <div class="flat-card p-8 rounded-3xl flex flex-col items-center text-center">
                         <div class="bg-black/40 p-4 rounded-full border border-white/10 mb-4 shadow-lg"><i data-lucide="cloud-sync" class="w-6 h-6 text-white"></i></div>
                         <h3 class="text-xl font-bold text-white mb-2">Workspace Sync</h3>
-                        <p class="text-xs text-neutral-400 max-w-md leading-relaxed mb-6">Connect your Google Account to automatically push tasks and pull calendar events securely via OAuth 2.0.</p>
+                        <p class="text-xs text-neutral-400 max-w-md leading-relaxed mb-6">Connect your Google Account to automatically push Tasks and pull Calendar events securely via OAuth 2.0.</p>
                         
                         <button id="google-auth-btn" onclick="handleGoogleAuthClick()" class="px-6 py-3 bg-white text-black rounded-full text-sm font-bold shadow-lg hover:bg-neutral-200 transition flex items-center gap-2">
                             <i data-lucide="log-in" class="w-4 h-4"></i> Authenticate with Google
@@ -439,7 +441,6 @@
 
     </main>
 
-    <!-- DESKTOP MODALS & OVERLAYS -->
     <div id="custom-picker-overlay" class="modal-overlay" onclick="closeCustomDrawers()"></div>
     
     <!-- Modal: Date Picker -->
@@ -497,10 +498,9 @@
         </div>
     </div>
 
-
     <script>
         // ==========================================
-        // GOOGLE WORKSPACE SYNC ENGINE
+        // GOOGLE WORKSPACE SYNC ENGINE (Robust Dual-Load)
         // ==========================================
         const GOOGLE_CLIENT_ID = "1000884953487-oq2m1a709vc35ejcfrj005kmip0s337u.apps.googleusercontent.com";
         const GOOGLE_API_KEY = "AIzaSyB6BcQqAFZ3DEF6gjT2i_MlxGH-f5-8NnU";
@@ -512,9 +512,9 @@
         let gisInited = false;
         let isAuthenticated = false;
 
-        function initGoogleSync() {
+        // Callback from Google Accounts GSI script
+        function gisLoaded() {
             try {
-                gapi.load('client', intializeGapiClient);
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: GOOGLE_CLIENT_ID,
                     scope: SCOPES,
@@ -529,16 +529,21 @@
                     },
                 });
                 gisInited = true;
-            } catch(e) {
-                console.warn("Google Sync Initialization Bypassed (Likely running offline or blocked): ", e);
-            }
+                console.log("GSI Initialized");
+            } catch(e) { console.error("GSI Init Error", e); }
         }
 
-        async function intializeGapiClient() {
+        // Callback from Google APIs script
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+
+        async function initializeGapiClient() {
             try {
                 await gapi.client.init({ apiKey: GOOGLE_API_KEY, discoveryDocs: DISCOVERY_DOCS });
                 gapiInited = true;
-            } catch(e) { console.warn("GAPI Init failed", e); }
+                console.log("GAPI Initialized");
+            } catch(e) { console.error("GAPI Init Error", e); }
         }
 
         function handleGoogleAuthClick() {
@@ -562,7 +567,7 @@
                 const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
                 const timeMax = new Date(now.getFullYear(), now.getMonth() + 2, 1).toISOString();
 
-                // High-speed simultaneous fetching via Promise.all
+                // Simultaneous fetching for speed
                 const [calendarRes, tasksListRes] = await Promise.all([
                     gapi.client.calendar.events.list({
                         'calendarId': 'primary',
@@ -593,7 +598,7 @@
                                 priority: 'high',
                                 repeat: 'none',
                                 completed: false,
-                                isEvent: true // tag it to render a calendar icon later
+                                isEvent: true 
                             });
                         }
                     }
@@ -636,7 +641,7 @@
 
         // System State
         let tasks = [];
-        let activeTab = 'calendar'; // Set default view to Calendar to match screenshot
+        let activeTab = 'today'; // Set default view
         
         // Calendar State
         let currentYear = getSystemDate().getFullYear();
@@ -649,7 +654,6 @@
         let pickerYear = getSystemDate().getFullYear();
         let pickerMonth = getSystemDate().getMonth();
         let selectedTaskDate = getSystemDate().toISOString().split('T')[0];
-        let selectedRepeatEndDate = ""; 
         let selectedTimeHour = 9;
         let selectedTimeMin = "00";
         let selectedTimePeriod = "AM";
@@ -679,7 +683,7 @@
             updateClock();
             setInterval(updateClock, 1000);
             
-            switchTab('calendar');
+            switchTab('today');
             safeRenderIcons();
         });
 
@@ -794,24 +798,18 @@
                                     ${hasDesc ? `<i id="desc-chevron-${task.id}" data-lucide="chevron-down" class="w-4 h-4 text-neutral-500 transition-transform" style="transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}"></i>` : ''}
                                 </span>
                                 <div class="flex gap-4 mt-1">
-                                    <span class="text-[10px] text-neutral-500 mono flex items-center gap-1.5 font-bold uppercase tracking-widest">
-                                        <i data-lucide="${iconType}" class="w-3.5 h-3.5 text-neutral-500"></i> ${timeLabel}
+                                    <span class="text-[10px] text-neutral-400 mono flex items-center gap-1.5 font-bold uppercase tracking-widest">
+                                        <i data-lucide="${iconType}" class="w-3.5 h-3.5 text-neutral-400"></i> ${timeLabel}
                                     </span>
-                                    ${task.repeat !== 'none' ? `
-                                        <span class="text-[10px] text-neutral-400 uppercase flex items-center gap-1.5 font-bold tracking-widest">
-                                            <i data-lucide="repeat" class="w-3 h-3"></i>
-                                            ${task.repeat === 'custom' ? 'Custom Repeat' : task.repeat}
-                                        </span>
-                                    ` : ''}
                                 </div>
                             </div>
                         </div>
-                        <button onclick="deleteTask('${task.id}')" class="p-2 shrink-0 text-neutral-600 hover:text-red-400 transition bg-black/20 rounded-lg border border-white/5 hover:border-red-500/30">
+                        <button onclick="deleteTask('${task.id}')" class="p-2 shrink-0 text-neutral-400 hover:text-red-400 transition bg-black/20 rounded-lg border border-white/5 hover:border-red-500/30">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
                     ${hasDesc ? `
-                        <div id="desc-container-${task.id}" class="${isExpanded ? '' : 'hidden'} pl-10 pr-4 pb-1 text-[11px] text-neutral-400 border-t border-white/10 pt-3 mt-2 leading-relaxed text-left font-medium">
+                        <div id="desc-container-${task.id}" class="${isExpanded ? '' : 'hidden'} pl-10 pr-4 pb-1 text-[11px] text-neutral-300 border-t border-white/10 pt-3 mt-2 leading-relaxed text-left font-medium">
                             ${task.description}
                         </div>
                     ` : ''}
@@ -840,8 +838,8 @@
             document.getElementById('stat-pending').textContent = pending.length;
             document.getElementById('stat-completed').textContent = completed.length;
 
-            listPending.innerHTML = pending.length > 0 ? pending.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-500 italic p-6 text-center border border-dashed border-white/10 rounded-2xl">No pending tasks. You're completely caught up.</div>`;
-            listCompleted.innerHTML = completed.length > 0 ? completed.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-600 italic px-2">No tasks completed yet.</div>`;
+            listPending.innerHTML = pending.length > 0 ? pending.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-400 italic p-6 text-center border border-dashed border-white/10 rounded-2xl bg-black/40">No pending tasks. You're completely caught up.</div>`;
+            listCompleted.innerHTML = completed.length > 0 ? completed.map(generateTaskCardHTML).join('') : `<div class="text-xs text-neutral-500 italic px-2">No tasks completed yet.</div>`;
 
             safeRenderIcons();
         }
@@ -873,9 +871,9 @@
             if (pending.length > 0) {
                 listPending.innerHTML = pending.map(generateTaskCardHTML).join('');
             } else if (total > 0) {
-                listPending.innerHTML = `<div class="text-xs text-neutral-400 italic p-8 text-center border border-dashed border-white/10 rounded-2xl flex flex-col items-center gap-4 bg-black/20"><i data-lucide="check-circle" class="w-8 h-8 text-white"></i><span>Focus complete. All tasks finished for today.</span></div>`;
+                listPending.innerHTML = `<div class="text-xs text-neutral-300 font-medium italic p-8 text-center border border-dashed border-white/10 rounded-2xl flex flex-col items-center gap-4 bg-black/40"><i data-lucide="check-circle" class="w-8 h-8 text-white"></i><span>Focus complete. All tasks finished for today.</span></div>`;
             } else {
-                listPending.innerHTML = `<div class="text-xs text-neutral-500 italic p-8 text-center border border-dashed border-white/10 rounded-2xl bg-black/20">Your focus is clear. No tasks scheduled for today.</div>`;
+                listPending.innerHTML = `<div class="text-xs text-neutral-400 font-medium italic p-8 text-center border border-dashed border-white/10 rounded-2xl bg-black/40">Your focus is clear. No tasks scheduled for today.</div>`;
             }
                 
             listCompleted.innerHTML = completed.length > 0 ? completed.map(generateTaskCardHTML).join('') : '';
@@ -903,7 +901,7 @@
 
             for (let i = firstDay - 1; i >= 0; i--) {
                 const btn = document.createElement('div');
-                btn.className = "h-14 md:h-16 rounded-2xl flex items-center justify-center text-[11px] font-bold text-neutral-700 bg-black/20 border border-transparent";
+                btn.className = "h-14 md:h-16 rounded-2xl flex items-center justify-center text-[11px] font-bold text-neutral-600 bg-black/20 border border-transparent";
                 btn.innerHTML = `<span>${prevDays - i}</span>`;
                 grid.appendChild(btn);
             }
@@ -919,7 +917,7 @@
                 
                 if (isSelected) btn.className += "bg-white text-black shadow-[0_4px_15px_rgba(255,255,255,0.2)] ";
                 else if (isToday) btn.className += "border border-white/20 bg-white/10 text-white ";
-                else btn.className += "text-neutral-400 hover:bg-white/5 hover:border-white/10 bg-[#111] ";
+                else btn.className += "text-neutral-300 hover:bg-white/10 hover:border-white/10 bg-black/40 ";
                 
                 btn.onclick = () => { selectedCalendarDate = dayStr; renderCalendar(); };
                 btn.innerHTML = `<span>${i}</span>`;
@@ -934,7 +932,7 @@
             const remaining = (7 - (totalCells % 7)) % 7;
             for (let i = 1; i <= remaining; i++) {
                 const btn = document.createElement('div');
-                btn.className = "h-14 md:h-16 rounded-2xl flex items-center justify-center text-[11px] font-bold text-neutral-700 bg-black/20 border border-transparent";
+                btn.className = "h-14 md:h-16 rounded-2xl flex items-center justify-center text-[11px] font-bold text-neutral-600 bg-black/20 border border-transparent";
                 btn.innerHTML = `<span>${i}</span>`;
                 grid.appendChild(btn);
             }
@@ -958,7 +956,7 @@
             document.getElementById('agenda-count').textContent = `${dayTasks.length} Scheduled`;
 
             if(dayTasks.length === 0) {
-                list.innerHTML = `<p class="text-xs text-neutral-500 italic text-center py-6">No tasks scheduled for this date.</p>`;
+                list.innerHTML = `<p class="text-xs text-neutral-400 italic text-center py-6">No tasks scheduled for this date.</p>`;
             } else {
                 list.innerHTML = dayTasks.map(generateTaskCardHTML).join('');
                 safeRenderIcons();
@@ -974,17 +972,14 @@
         function renderProfile() {
             const total = tasks.length;
             const completed = tasks.filter(t => t.completed).length;
-            const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
-
             document.getElementById('profile-total-tasks').textContent = total;
             document.getElementById('profile-total-completed').textContent = completed;
-            
             safeRenderIcons();
         }
 
         function openDatePicker(target) {
             pickerTarget = target;
-            let initialDate = (target === 'task') ? selectedTaskDate : (selectedRepeatEndDate || getSystemDate().toISOString().split('T')[0]);
+            let initialDate = selectedTaskDate;
             
             const [y, m, d] = initialDate.split('-');
             pickerYear = parseInt(y, 10);
@@ -1022,7 +1017,7 @@
 
             for (let i = firstDay - 1; i >= 0; i--) {
                 const dummy = document.createElement('div');
-                dummy.className = "h-8 flex items-center justify-center text-[10px] text-neutral-700 font-bold cursor-default";
+                dummy.className = "h-8 flex items-center justify-center text-[10px] text-neutral-600 font-bold cursor-default";
                 dummy.innerText = prevDays - i;
                 grid.appendChild(dummy);
             }
@@ -1033,8 +1028,7 @@
                 btn.type = "button";
                 btn.className = "h-8 rounded-full text-[10px] font-bold transition-colors flex items-center justify-center border border-transparent ";
                 
-                let isSelected = (pickerTarget === 'task' && formattedDate === selectedTaskDate) || 
-                                 (pickerTarget === 'repeat-end' && formattedDate === selectedRepeatEndDate);
+                let isSelected = (pickerTarget === 'task' && formattedDate === selectedTaskDate);
 
                 if (isSelected) {
                     btn.className += "bg-white text-black shadow-md";
@@ -1044,8 +1038,7 @@
 
                 btn.innerText = i;
                 btn.onclick = () => {
-                    if (pickerTarget === 'task') selectedTaskDate = formattedDate;
-                    else selectedRepeatEndDate = formattedDate;
+                    selectedTaskDate = formattedDate;
                     updateDatePickerButton(pickerTarget, formattedDate);
                     closeCustomDrawers();
                 };
@@ -1057,7 +1050,6 @@
             const [y, m, d] = dateStr.split('-');
             const displayStr = `${MONTH_NAMES[parseInt(m, 10)-1]} ${parseInt(d, 10)}, ${y}`;
             if (target === 'task') document.getElementById('task-date-display').textContent = displayStr;
-            else if (target === 'repeat-end') document.getElementById('repeat-end-date-display').textContent = displayStr;
         }
 
         function toggleTimeVisibility() {
@@ -1079,7 +1071,7 @@
             for (let i = 1; i <= 12; i++) {
                 const btn = document.createElement('button');
                 btn.type = "button";
-                btn.className = `py-2 rounded-xl text-xs font-bold border transition ${selectedTimeHour === i ? 'bg-white text-black border-white shadow-md' : 'border-white/10 text-neutral-400 hover:bg-white/10'}`;
+                btn.className = `py-2 rounded-xl text-xs font-bold border transition ${selectedTimeHour === i ? 'bg-white text-black border-white shadow-md' : 'border-white/10 text-neutral-300 hover:bg-white/10'}`;
                 btn.innerText = i;
                 btn.onclick = () => { selectedTimeHour = i; renderTimePickerComponents(); updateTimePickerButton(); };
                 hoursGrid.appendChild(btn);
@@ -1091,7 +1083,7 @@
             minSteps.forEach(min => {
                 const btn = document.createElement('button');
                 btn.type = "button";
-                btn.className = `py-2 rounded-xl text-xs font-bold border transition ${selectedTimeMin === min ? 'bg-white text-black border-white shadow-md' : 'border-white/10 text-neutral-400 hover:bg-white/10'}`;
+                btn.className = `py-2 rounded-xl text-xs font-bold border transition ${selectedTimeMin === min ? 'bg-white text-black border-white shadow-md' : 'border-white/10 text-neutral-300 hover:bg-white/10'}`;
                 btn.innerText = min;
                 btn.onclick = () => { selectedTimeMin = min; renderTimePickerComponents(); updateTimePickerButton(); };
                 minsGrid.appendChild(btn);
@@ -1101,11 +1093,11 @@
             const btnPM = document.getElementById('period-pm');
             
             if (selectedTimePeriod === 'AM') {
-                btnAM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center bg-white text-black border-white shadow-md";
-                btnPM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center border-white/10 text-neutral-400 hover:bg-white/10";
+                btnAM.className = "flex-1 py-3 rounded-xl border border-white text-sm font-bold transition text-center bg-white text-black shadow-md";
+                btnPM.className = "flex-1 py-3 rounded-xl border border-white/20 text-sm font-bold transition text-center hover:bg-white/5";
             } else {
-                btnPM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center bg-white text-black border-white shadow-md";
-                btnAM.className = "flex-1 py-3 rounded-xl text-xs font-bold transition text-center border-white/10 text-neutral-400 hover:bg-white/10";
+                btnPM.className = "flex-1 py-3 rounded-xl border border-white text-sm font-bold transition text-center bg-white text-black shadow-md";
+                btnAM.className = "flex-1 py-3 rounded-xl border border-white/20 text-sm font-bold transition text-center hover:bg-white/5";
             }
         }
 
@@ -1146,7 +1138,7 @@
             hasCustomTime = true;
             document.getElementById('time-input-container').classList.remove('hidden');
 
-            switchTab('calendar');
+            switchTab('today');
         }
 
         function toggleTaskCompletion(id) {
@@ -1168,7 +1160,7 @@
         function showMobileToast(msg) {
             const container = document.getElementById('desktop-toast-container');
             const t = document.createElement('div');
-            t.className = "bg-white text-black px-5 py-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 text-xs font-bold flex items-center justify-between toast-enter";
+            t.className = "bg-[#111] text-white px-5 py-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 text-xs font-bold flex items-center justify-between toast-enter";
             t.innerHTML = `<span>${msg}</span><i data-lucide="info" class="w-4 h-4 text-neutral-400"></i>`;
             container.appendChild(t);
             safeRenderIcons();
